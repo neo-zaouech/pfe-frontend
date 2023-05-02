@@ -1,0 +1,27 @@
+const governments = [
+  { code: 'TO', name: 'Touzeur' },
+  { code: 'MN', name: 'Manouba' },
+  { code: 'BJ', name: 'Bèja' },
+  { code: 'BA', name: 'Ben Arous' },
+  { code: 'BZ', name: 'Bizerte' },
+  { code: 'JE', name: 'Jandouba' },
+  { code: 'NB', name: 'Nabeul' },
+  { code: 'TU', name: 'Tunis' },
+  { code: 'KF', name: 'Kef' },
+  { code: 'KS', name: 'Kasserine' },
+  { code: 'GB', name: 'Gabes' },
+  { code: 'GF', name: 'Gafsa' },
+  { code: 'SZ', name: 'Sidi Bouzid' },
+  { code: 'SF', name: 'Sfax' },
+  { code: 'SL', name: 'Siliana' },
+  { code: 'MH', name: 'Mahdia' },
+  { code: 'MS', name: 'Monastir' },
+  { code: 'KR', name: 'Kairouan' },
+  { code: 'SS', name: 'Sousse' },
+  { code: 'ZA', name: 'Zaghouen' },
+  { code: 'ME', name: 'Médenin' },
+  { code: 'KB', name: 'Kbéli' },
+  { code: 'TA', name: 'Tataouin' },
+]
+
+export default governments
