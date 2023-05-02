@@ -1,4 +1,5 @@
 import {
+  Button,
   Stack,
   Table,
   TableBody,
@@ -12,20 +13,34 @@ import React, { useEffect, useState } from 'react'
 import Paper from '@mui/material/Paper'
 import axios from 'axios'
 import dayjs from 'dayjs'
-
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
+import SettingsIcon from '@mui/icons-material/Settings'
+import HighlightOffIcon from '@mui/icons-material/HighlightOff'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
+import { useNavigate } from 'react-router-dom'
+import NeoButton from '../../Components/NeoButton'
 const Bureaux = () => {
-  const [users, setUsers] = useState([])
-
+  const navigate = useNavigate()
+  const [bureaux, setBureaux] = useState([])
   useEffect(() => {
     axios
       .get('http://127.0.0.1:5000/admin/bureau')
       .then((response) => {
-        setUsers(response.data)
+        setBureaux(response.data)
       })
       .catch((error) => {
         console.log(error)
       })
   }, [])
+
+  const deleteOffice = (idBureau) => {
+    axios
+      .delete('http://127.0.0.1:5000/admin/bureau', { data: { idBureau } })
+      .then((response) => {
+        console.log(response.data)
+        setBureaux(response.data)
+      })
+  }
 
   return (
     <Stack
@@ -37,10 +52,18 @@ const Bureaux = () => {
       pt={'200px'}
       spacing={3}
     >
+      <NeoButton
+        text={'add Office'}
+        type={'success'}
+        onClick={() => {
+          navigate('/add_bureau')
+        }}
+      />
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
+              <TableCell></TableCell>
               <TableCell>localisation</TableCell>
               <TableCell align="center">chefService</TableCell>
               <TableCell align="center">Horaires</TableCell>
@@ -49,19 +72,32 @@ const Bureaux = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map((row) => (
+            {bureaux.map((bureau) => (
               <TableRow
-                key={row._id}
+                key={bureau._id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {row.localisation}
+                  {bureau.deletedAt === null ? (
+                    <CheckCircleOutlineIcon
+                      htmlColor="green"
+                      sx={{ fontSize: '30px' }}
+                    />
+                  ) : (
+                    <HighlightOffIcon
+                      htmlColor="red"
+                      sx={{ fontSize: '30px' }}
+                    />
+                  )}
                 </TableCell>
-                <TableCell align="center">{row.chefService}</TableCell>
+                <TableCell component="th" scope="row">
+                  {`${bureau.localisation.gov} - ${bureau.localisation.city}`}
+                </TableCell>
+                <TableCell align="center">{bureau.chefService}</TableCell>
                 <TableCell align="center">
-                  {row.horaire.map((horaire) => {
+                  {bureau.horaire.map((horaire, index) => {
                     return (
-                      <Typography marginY={'5px'}>
+                      <Typography marginY={'5px'} key={index}>
                         Du
                         <span style={{ fontWeight: 900 }}>
                           {` ${horaire.dateDeb} `}
@@ -83,9 +119,49 @@ const Bureaux = () => {
                   })}
                 </TableCell>
                 <TableCell align="center">
-                  {dayjs(row.createdAt).format('YYYY-MM-DD HH:mm')}
+                  {dayjs(bureau.createdAt).format('YYYY-MM-DD HH:mm')}
                 </TableCell>
-                <TableCell align="center">{}</TableCell>
+                <TableCell
+                  align="center"
+                  sx={{ display: 'flex', justifyContent: 'space-around' }}
+                >
+                  <Button
+                    color="warning"
+                    variant="contained"
+                    startIcon={<SettingsIcon />}
+                    onClick={() => {
+                      navigate('/edit_bureau', { state: { bureau } })
+                    }}
+                  >
+                    Edit
+                  </Button>
+
+                  {bureau.deletedAt !== null ? (
+                    <Button
+                      onClick={() => deleteOffice(bureau._id)}
+                      color="success"
+                      variant="contained"
+                      startIcon={<DeleteForeverIcon />}
+                    >
+                      Restore
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        if (
+                          window.confirm('Are you sure to delete this office ?')
+                        ) {
+                          deleteOffice(bureau._id)
+                        }
+                      }}
+                      color="error"
+                      variant="contained"
+                      startIcon={<DeleteForeverIcon />}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
