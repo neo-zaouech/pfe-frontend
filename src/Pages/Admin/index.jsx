@@ -24,8 +24,20 @@ const Dashboard = () => {
           navigate('/bureaux')
         }}
       />
-      <NeoButton text={'Services'} type={'info'} />
-      <NeoButton text={'Utilisateurs'} type={'info'} />
+      <NeoButton
+        text={'Services'}
+        type={'info'}
+        onClick={() => {
+          navigate('/services')
+        }}
+      />
+      <NeoButton
+        text={'Utilisateurs'}
+        type={'info'}
+        onClick={() => {
+          navigate('/users')
+        }}
+      />
     </Stack>
   )
 }
