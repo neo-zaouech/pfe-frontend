@@ -6,11 +6,12 @@ import {
   Select,
   Stack,
   TextField,
+  Typography,
 } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import NeoButton from '../../Components/NeoButton'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Map from '../../Components/map/Map'
 import governments from '../../goverments'
@@ -24,29 +25,63 @@ import { DayCalendar } from '@mui/x-date-pickers/internals'
 import dayjs from 'dayjs'
 import { Label } from '@mui/icons-material'
 
-const FormBureau = () => {
-  const [gov, setGov] = useState('TU')
-  const [services, setServices] = useState([])
+const FormBureau = ({ type }) => {
+  const route = useLocation()
+  const navigate = useNavigate()
+  const [gov, setGov] = useState(
+    type === 'add' ? null : route.state.bureau.localisation.gov
+  )
+  const [services, setServices] = useState(
+    type === 'add' ? [] : route.state.bureau.listeServices
+  )
   const [users, setUsers] = useState([])
   const [horaire, setHoraire] = useState([])
-  const route = useLocation()
+
   const { control, handleSubmit } = useForm({
-    defaultValues: {
-      localisation: {},
-      listeServices: [],
-      city: '',
-    },
+    defaultValues:
+      type === 'add'
+        ? {
+            localisation: {},
+            listeServices: [],
+            city: '',
+          }
+        : {
+            listeServices: services,
+            city: route.state.bureau.localisation.city,
+          },
   })
 
   const submitForm = (data) => {
     const { listeServices, city } = data
-    if (route.state !== null) {
+    if (type === 'add') {
+      axios
+        .post(`${process.env.REACT_APP_URL}/admin/bureau`, {
+          localisation: { gov: gov, city: city },
+          listeServices: listeServices,
+          horaire: [],
+        })
+        .then((response) => {
+          navigate('/bureaux')
+        })
+        .catch((error) => {
+          console.log(error)
+        })
     } else {
-      axios.post(`${process.env.REACT_APP_URL}/admin/bureau`, {
-        localisation: { gov: gov, city: city },
-        listeServices: listeServices,
-        horaire: [],
-      })
+      axios
+        .put(`${process.env.REACT_APP_URL}/admin/bureau`, {
+          bureauReq: {
+            ...route.state.bureau,
+            localisation: { gov: gov, city: city },
+            listeServices: listeServices,
+            horaire: [],
+          },
+        })
+        .then((response) => {
+          navigate('/bureaux')
+        })
+        .catch((error) => {
+          console.log(error)
+        })
     }
   }
 
@@ -58,10 +93,6 @@ const FormBureau = () => {
       setUsers(res.data)
     })
   }, [])
-
-  useEffect(() => {
-    console.log(horaire)
-  }, [horaire])
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -92,9 +123,12 @@ const FormBureau = () => {
                   defaultValue={[]}
                   onChange={(event, item) => {
                     onChange(item)
-                    setGov(item.code)
+                    item ? setGov(item.code) : setGov(null)
                   }}
-                  value={governments.find((g) => g.code === gov)}
+                  value={
+                    governments.find((g) => g !== null && g.code === gov) ||
+                    null
+                  }
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -124,6 +158,7 @@ const FormBureau = () => {
                 <Autocomplete
                   multiple
                   fullWidth
+                  includeInputInList
                   id="tags-standard"
                   options={services}
                   getOptionLabel={(option) => option.name}
@@ -131,6 +166,9 @@ const FormBureau = () => {
                   onChange={(event, item) => {
                     onChange(item)
                   }}
+                  isOptionEqualToValue={(option, value) =>
+                    option.name === value.name
+                  }
                   value={value}
                   renderInput={(params) => (
                     <TextField
@@ -171,9 +209,7 @@ const FormBureau = () => {
                 />
               )}
             />
-            <NeoButton
-              type={'edit'}
-              text={'Add Horaire'}
+            <Typography
               onClick={() => {
                 setHoraire([
                   ...horaire,
@@ -185,7 +221,9 @@ const FormBureau = () => {
                   },
                 ])
               }}
-            />
+            >
+              Add Horaire
+            </Typography>
             {horaire.map((h, index) => {
               return (
                 <Stack
@@ -196,14 +234,8 @@ const FormBureau = () => {
                 >
                   <Label />
                   <Box>
-                    <InputLabel id="demo-simple-select-label">
-                      Start Date
-                    </InputLabel>
-                    <Select
-                      id="demo-simple-select-label"
-                      label="Start Date"
-                      defaultValue="LU"
-                    >
+                    <InputLabel>Start Date</InputLabel>
+                    <Select label="Start Date" defaultValue="LU">
                       <MenuItem value={'LU'}>Monday</MenuItem>
                       <MenuItem value={'MA'}>Tuesday</MenuItem>
                       <MenuItem value={'ME'}>Wednesday</MenuItem>
@@ -214,14 +246,8 @@ const FormBureau = () => {
                     </Select>
                   </Box>
                   <Box>
-                    <InputLabel id="demo-simple-select-label">
-                      Start Date
-                    </InputLabel>
-                    <Select
-                      id="demo-simple-select-label"
-                      label="End Date"
-                      defaultValue="LU"
-                    >
+                    <InputLabel>Start Date</InputLabel>
+                    <Select label="End Date" defaultValue="LU">
                       <MenuItem value={'LU'}>Monday</MenuItem>
                       <MenuItem value={'MA'}>Tuesday</MenuItem>
                       <MenuItem value={'ME'}>Wednesday</MenuItem>
@@ -232,11 +258,8 @@ const FormBureau = () => {
                     </Select>
                   </Box>
                   <Box>
-                    <InputLabel id="demo-simple-select-label">
-                      Heure début
-                    </InputLabel>
+                    <InputLabel>Heure début</InputLabel>
                     <TimePicker
-                      id="demo-simple-select-label"
                       label=""
                       onChange={(value) => {
                         const x = [...horaire]
@@ -246,11 +269,8 @@ const FormBureau = () => {
                     />
                   </Box>
                   <Box>
-                    <InputLabel id="demo-simple-select-label">
-                      End Time
-                    </InputLabel>
+                    <InputLabel>End Time</InputLabel>
                     <TimePicker
-                      id="demo-simple-select-label"
                       label=""
                       onChange={(value) => {
                         const x = [...horaire]
@@ -262,7 +282,10 @@ const FormBureau = () => {
                 </Stack>
               )
             })}
-            <NeoButton type={'success'} text={'Edit'} />
+            <NeoButton
+              type={'success'}
+              text={type === 'add' ? 'Add new' : 'Edit'}
+            />
           </Stack>
         </form>
       </Stack>

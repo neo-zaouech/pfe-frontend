@@ -1,6 +1,5 @@
 import {
   Button,
-  Chip,
   Stack,
   Table,
   TableBody,
@@ -8,41 +7,49 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import Paper from '@mui/material/Paper'
 import axios from 'axios'
-import dayjs from 'dayjs'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import SettingsIcon from '@mui/icons-material/Settings'
 import HighlightOffIcon from '@mui/icons-material/HighlightOff'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
-import { useNavigate } from 'react-router-dom'
 import NeoButton from '../../Components/NeoButton'
-const Bureaux = () => {
-  const navigate = useNavigate()
-  const [bureaux, setBureaux] = useState([])
-  useEffect(() => {
+import { useDispatch, useSelector } from 'react-redux'
+import listeActions from '../../redux/actions'
+import FormUser from './FormUser'
+const Users = () => {
+  const [type, setType] = useState('add')
+  const [open, setOpen] = useState(false)
+  const [serviceProps, setServiceProps] = useState(false)
+  const [users, setServices] = useState([])
+  const statusService = useSelector((state) => state.statusService)
+  const dispatch = useDispatch()
+  const getUsers = () => {
     axios
-      .get('http://127.0.0.1:5000/admin/bureau')
+      .get('http://127.0.0.1:5000/admin/user')
       .then((response) => {
-        setBureaux(response.data)
+        setServices(response.data)
       })
-      .catch((error) => {
-        console.log(error)
-      })
-  }, [])
-
-  const deleteOffice = (idBureau) => {
-    axios
-      .delete('http://127.0.0.1:5000/admin/bureau', { data: { idBureau } })
-      .then((response) => {
-        console.log(response.data)
-        setBureaux(response.data)
-      })
+      .catch((error) => {})
   }
 
+  useEffect(() => {
+    getUsers()
+    if (statusService !== null) {
+      dispatch({ type: listeActions.statusService, statusService: null })
+    }
+  }, [statusService])
+
+  const deleteUser = (idUser) => {
+    axios
+      .delete('http://127.0.0.1:5000/admin/user', { data: { idUser } })
+      .then((response) => {
+        console.log(response.data)
+        setServices(response.data)
+      })
+  }
   return (
     <Stack
       position={'absolute'}
@@ -53,11 +60,19 @@ const Bureaux = () => {
       pt={'200px'}
       spacing={3}
     >
+      <FormUser
+        type={type}
+        user={serviceProps}
+        open={open}
+        handleClose={() => setOpen(false)}
+      />
       <NeoButton
-        text={'add Office'}
+        text={'add User'}
         type={'success'}
         onClick={() => {
-          navigate('/add_bureau')
+          setType('add')
+          setOpen(true)
+          setServiceProps(null)
         }}
       />
       <TableContainer component={Paper}>
@@ -65,21 +80,21 @@ const Bureaux = () => {
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
-              <TableCell>localisation</TableCell>
-              <TableCell align="center">chefService</TableCell>
-              <TableCell align="center">Horaires</TableCell>
-              <TableCell align="center">crée le</TableCell>
-              <TableCell align="center">Actions</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell align="center">Email</TableCell>
+              <TableCell align="center">CIN</TableCell>
+              <TableCell align="center">Role</TableCell>
+              <TableCell align="center">Bureau</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {bureaux.map((bureau) => (
+            {users.map((user) => (
               <TableRow
-                key={bureau._id}
+                key={user._id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {bureau.deletedAt === null ? (
+                  {user.deletedAt === null ? (
                     <CheckCircleOutlineIcon
                       htmlColor="green"
                       sx={{ fontSize: '30px' }}
@@ -92,67 +107,43 @@ const Bureaux = () => {
                   )}
                 </TableCell>
                 <TableCell component="th" scope="row">
-                  {`${bureau.localisation.gov} - ${bureau.localisation.city}`}
+                  {user.nom + ' ' + user.prenom}
                 </TableCell>
-                <TableCell align="center">{bureau.chefService}</TableCell>
-                <TableCell align="center">
-                  {bureau.horaire.map((horaire, index) => {
-                    return (
-                      <Typography marginY={'5px'} key={index}>
-                        Du
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.dateDeb} `}
-                        </span>
-                        Jusqu'à
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.dateFin} `}
-                        </span>
-                        Du
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.heureDeb} `}
-                        </span>
-                        Au
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.heureFin} `}
-                        </span>
-                      </Typography>
-                    )
-                  })}
+                <TableCell component="th" scope="row" align="center">
+                  {user.email}
                 </TableCell>
-                <TableCell align="center">
-                  {bureau.listeServices.map((service, index) => {
-                    return (
-                      <Chip
-                        sx={{ mr: '10px' }}
-                        key={index}
-                        label={service.name}
-                      ></Chip>
-                    )
-                  })}
+                <TableCell component="th" scope="row" align="center">
+                  {user.cin}
                 </TableCell>
-                <TableCell align="center">
-                  {dayjs(bureau.createdAt).format('YYYY-MM-DD HH:mm')}
+                <TableCell component="th" scope="row" align="center">
+                  {user.role}
+                </TableCell>
+                <TableCell component="th" scope="row" align="center">
+                  {user.bureau !== null &&
+                    `${user.bureau.localisation.gov} - ${user.bureau.localisation.city}`}
                 </TableCell>
                 <TableCell
                   align="center"
                   sx={{ display: 'flex', justifyContent: 'space-around' }}
                 >
-                  {bureau.deletedAt === null && (
+                  {user.deletedAt === null && (
                     <Button
                       color="warning"
                       variant="contained"
                       startIcon={<SettingsIcon />}
                       onClick={() => {
-                        navigate('/edit_bureau', { state: { bureau } })
+                        setType('edit')
+                        setOpen(true)
+                        setServiceProps(user)
                       }}
                     >
                       Edit
                     </Button>
                   )}
 
-                  {bureau.deletedAt !== null ? (
+                  {user.deletedAt !== null ? (
                     <Button
-                      onClick={() => deleteOffice(bureau._id)}
+                      onClick={() => deleteUser(user._id)}
                       color="success"
                       variant="contained"
                       startIcon={<DeleteForeverIcon />}
@@ -165,7 +156,7 @@ const Bureaux = () => {
                         if (
                           window.confirm('Are you sure to delete this office ?')
                         ) {
-                          deleteOffice(bureau._id)
+                          deleteUser(user._id)
                         }
                       }}
                       color="error"
@@ -185,4 +176,4 @@ const Bureaux = () => {
   )
 }
 
-export default Bureaux
+export default Users

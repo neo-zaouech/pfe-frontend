@@ -1,5 +1,6 @@
 const listeActions = {
-  login: "LOGIN",
-};
+  login: 'LOGIN',
+  statusService: 'ADD_SERVCICE',
+}
 
-export default listeActions;
+export default listeActions

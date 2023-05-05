@@ -6,6 +6,8 @@ import DashboardAdmin from './Pages/Admin'
 import Bureaux from './Pages/Admin/Bureaux'
 import Login from './Pages/Login'
 import FormBureau from './Pages/Admin/FormBureau'
+import Services from './Pages/Admin/Services'
+import Users from './Pages/Admin/Users'
 
 function App() {
   const user = useSelector((state) => state.user)
@@ -20,7 +22,9 @@ function App() {
             <Route path="/" element={<DashboardAdmin />} />
             <Route path="/bureaux" element={<Bureaux />} />
             <Route path="/edit_bureau" element={<FormBureau />} />
-            <Route path="/add_bureau" element={<FormBureau />} />
+            <Route path="/add_bureau" element={<FormBureau type={'add'} />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/users" element={<Users />} />
           </>
         ) : (
           <Route path="/" element={<h1>Hello world</h1>} />
