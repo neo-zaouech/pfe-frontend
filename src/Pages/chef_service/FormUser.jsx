@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import axios from 'axios'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import listeActions from '../../redux/actions'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
@@ -33,19 +33,18 @@ const style = {
   textAlign: 'center',
 }
 
-export default function FormUser({ type, user, open, handleClose }) {
+export default function FormUser({ type, open, handleClose }) {
   const dispatch = useDispatch()
   const [bureaux, setBureaux] = useState([])
-
+  const user = useSelector((state) => state.user)
   const { control, handleSubmit, reset, watch } = useForm({
     defaultValues: {
       email: type === 'add' ? '' : user.email,
       nom: type === 'add' ? '' : user.nom,
-      prenom: type === 'add' ? '' : user.prenom,
       motPasse: type === 'add' ? '' : user.motPasse,
+      prenom: type === 'add' ? '' : user.prenom,
       cin: type === 'add' ? '' : user.cin,
-      role: type === 'add' ? '' : user.role,
-      bureau: type === 'add' ? null : user.bureau,
+      role: 'guichier',
     },
   })
 
@@ -59,7 +58,7 @@ export default function FormUser({ type, user, open, handleClose }) {
   }
 
   const actionService = (data) => {
-    const { email, nom, prenom, cin, role, bureau, motPasse } = data
+    const { email, nom, prenom, cin, role, motPasse } = data
     if (type === 'add') {
       axios
         .post('http://127.0.0.1:5000/admin/user', {
@@ -68,22 +67,38 @@ export default function FormUser({ type, user, open, handleClose }) {
           motPasse,
           prenom,
           cin,
-          role,
-          bureau,
+          role: 'guichier',
+          bureau: user.bureau,
         })
         .then((response) => {
-          handleClose()
-          dispatch({ type: listeActions.statusService, statusService: 'add' })
+          localStorage.setItem(
+            'user',
+            JSON.stringify({ ...user, bureau: response.data })
+          )
+          dispatch({ type: listeActions.addEmploye, bureau: response.data })
+          window.location.reload()
         })
         .catch((error) => {})
     } else {
       axios
         .put('http://127.0.0.1:5000/admin/user', {
-          userReq: { ...user, email, nom, prenom, cin, role, bureau },
+          userReq: {
+            ...user,
+            email,
+            nom,
+            prenom,
+            cin,
+            role,
+            bureau: user.bureau,
+          },
         })
         .then((response) => {
           handleClose()
-          dispatch({ type: listeActions.statusService, statusService: 'edit' })
+          localStorage.setItem(
+            'user',
+            JSON.stringify({ ...user, bureau: response.data })
+          )
+          dispatch({ type: listeActions.addEmploye, bureau: response.data })
         })
         .catch((error) => {})
     }
@@ -140,6 +155,20 @@ export default function FormUser({ type, user, open, handleClose }) {
                 )}
               />
               <Controller
+                name={'motPasse'}
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    hidden={type === 'edit'}
+                    type="password"
+                    fullWidth
+                    value={value}
+                    onChange={onChange}
+                    label={'Password'}
+                  />
+                )}
+              />
+              <Controller
                 name={'cin'}
                 control={control}
                 rules={{
@@ -162,21 +191,6 @@ export default function FormUser({ type, user, open, handleClose }) {
                   />
                 )}
               />
-              {type === 'add' && (
-                <Controller
-                  name={'motPasse'}
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <TextField
-                      type="password"
-                      fullWidth
-                      value={value}
-                      onChange={onChange}
-                      label={'Password'}
-                    />
-                  )}
-                />
-              )}
               <Controller
                 name={'email'}
                 control={control}
@@ -197,54 +211,19 @@ export default function FormUser({ type, user, open, handleClose }) {
                   <FormControl fullWidth>
                     <InputLabel id="demo-simple-select-label">Role</InputLabel>
                     <Select
+                      disabled
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      value={value}
+                      value={'guichier'}
                       label="Role"
                       onChange={onChange}
                     >
-                      <MenuItem value={'admin'}>Admin</MenuItem>
-                      <MenuItem value={'chef_service'}>Chef Service</MenuItem>
                       <MenuItem value={'guichier'}>Guichier</MenuItem>
                     </Select>
                   </FormControl>
                 )}
               />
-              {((user !== null && user.role !== 'admin') ||
-                watch('role') !== 'admin') && (
-                <Controller
-                  name="bureau"
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <Autocomplete
-                      fullWidth
-                      includeInputInList
-                      id="tags-standard"
-                      options={bureaux}
-                      getOptionLabel={(option) =>
-                        `${option.localisation.gov} - ${option.localisation.city}`
-                      }
-                      defaultValue={[]}
-                      onChange={(event, item) => {
-                        onChange(item)
-                      }}
-                      isOptionEqualToValue={(option, value) =>
-                        `${option.localisation.gov} - ${option.localisation.city}` ===
-                        `${value.localisation.gov} - ${value.localisation.city}`
-                      }
-                      value={value}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          variant="standard"
-                          label="Liste des bureaux"
-                          placeholder="Bureaux"
-                        />
-                      )}
-                    />
-                  )}
-                />
-              )}
+
               <NeoButton
                 text={type === 'add' ? 'Add new' : 'Edit'}
                 type={type === 'add' ? 'success' : 'edit'}

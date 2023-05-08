@@ -1,6 +1,7 @@
 import {
   Autocomplete,
   Box,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -24,7 +25,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { DayCalendar } from '@mui/x-date-pickers/internals'
 import dayjs from 'dayjs'
 import { Label } from '@mui/icons-material'
-
+import CloseIcon from '@mui/icons-material/Close'
 const FormBureau = ({ type }) => {
   const route = useLocation()
   const navigate = useNavigate()
@@ -35,30 +36,36 @@ const FormBureau = ({ type }) => {
     type === 'add' ? [] : route.state.bureau.listeServices
   )
   const [users, setUsers] = useState([])
-  const [horaire, setHoraire] = useState([])
+  const [horaire, setHoraire] = useState(
+    type === 'add' ? [] : route.state.bureau.horaire
+  )
 
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit, reset } = useForm({
     defaultValues:
       type === 'add'
         ? {
             localisation: {},
             listeServices: [],
             city: '',
+            chefService: null,
           }
         : {
             listeServices: services,
             city: route.state.bureau.localisation.city,
+            chefService: route.state.bureau.listeEmploye.chefService,
           },
   })
 
   const submitForm = (data) => {
-    const { listeServices, city } = data
+    const { listeServices, city, chefService } = data
     if (type === 'add') {
+      console.log(data)
       axios
         .post(`${process.env.REACT_APP_URL}/admin/bureau`, {
           localisation: { gov: gov, city: city },
           listeServices: listeServices,
-          horaire: [],
+          horaire,
+          chefService,
         })
         .then((response) => {
           navigate('/bureaux')
@@ -73,7 +80,8 @@ const FormBureau = ({ type }) => {
             ...route.state.bureau,
             localisation: { gov: gov, city: city },
             listeServices: listeServices,
-            horaire: [],
+            horaire,
+            listeEmploye: { chefService },
           },
         })
         .then((response) => {
@@ -93,6 +101,10 @@ const FormBureau = ({ type }) => {
       setUsers(res.data)
     })
   }, [])
+
+  useEffect(() => {
+    console.log(horaire)
+  }, [horaire])
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -160,7 +172,9 @@ const FormBureau = ({ type }) => {
                   fullWidth
                   includeInputInList
                   id="tags-standard"
-                  options={services}
+                  options={services.filter((service) => {
+                    return service.deletedAt === null
+                  })}
                   getOptionLabel={(option) => option.name}
                   defaultValue={[]}
                   onChange={(event, item) => {
@@ -186,14 +200,16 @@ const FormBureau = ({ type }) => {
               control={control}
               render={({ field: { value, onChange } }) => (
                 <Autocomplete
-                  multiple
                   fullWidth
                   id="tags-standard"
-                  options={users.filter(({ role }) => {
-                    return role === 'chef_service'
+                  options={users.filter(({ role, deletedAt, bureau }) => {
+                    return (
+                      role === 'chef_service' &&
+                      deletedAt === null &&
+                      bureau === null
+                    )
                   })}
                   getOptionLabel={(option) => option.nom + ' ' + option.prenom}
-                  defaultValue={[]}
                   onChange={(event, item) => {
                     onChange(item)
                   }}
@@ -235,7 +251,16 @@ const FormBureau = ({ type }) => {
                   <Label />
                   <Box>
                     <InputLabel>Start Date</InputLabel>
-                    <Select label="Start Date" defaultValue="LU">
+                    <Select
+                      value={h.dateDeb}
+                      label="Start Date"
+                      onChange={(event) => {
+                        const value = event.target.value
+                        const x = [...horaire]
+                        x[index].dateDeb = value
+                        setHoraire(x)
+                      }}
+                    >
                       <MenuItem value={'LU'}>Monday</MenuItem>
                       <MenuItem value={'MA'}>Tuesday</MenuItem>
                       <MenuItem value={'ME'}>Wednesday</MenuItem>
@@ -247,7 +272,16 @@ const FormBureau = ({ type }) => {
                   </Box>
                   <Box>
                     <InputLabel>Start Date</InputLabel>
-                    <Select label="End Date" defaultValue="LU">
+                    <Select
+                      value={h.dateFin}
+                      label="End Date"
+                      onChange={(event) => {
+                        const value = event.target.value
+                        const x = [...horaire]
+                        x[index].dateFin = value
+                        setHoraire(x)
+                      }}
+                    >
                       <MenuItem value={'LU'}>Monday</MenuItem>
                       <MenuItem value={'MA'}>Tuesday</MenuItem>
                       <MenuItem value={'ME'}>Wednesday</MenuItem>
@@ -261,9 +295,14 @@ const FormBureau = ({ type }) => {
                     <InputLabel>Heure début</InputLabel>
                     <TimePicker
                       label=""
+                      value={
+                        h.heureDeb !== ''
+                          ? dayjs('2022-04-17T' + h.heureDeb)
+                          : null
+                      }
                       onChange={(value) => {
                         const x = [...horaire]
-                        x[index].heureDeb = dayjs(value).format('HH:mm:ss')
+                        x[index].heureDeb = dayjs(value).format('HH:mm')
                         setHoraire(x)
                       }}
                     />
@@ -272,13 +311,30 @@ const FormBureau = ({ type }) => {
                     <InputLabel>End Time</InputLabel>
                     <TimePicker
                       label=""
+                      value={
+                        h.heureFin !== ''
+                          ? dayjs('2022-04-17T' + h.heureFin)
+                          : null
+                      }
                       onChange={(value) => {
                         const x = [...horaire]
-                        x[index].heureDeb = dayjs(value).format('HH:mm:ss')
+                        x[index].heureFin = dayjs(value).format('HH:mm')
                         setHoraire(x)
                       }}
                     />
                   </Box>
+                  <IconButton
+                    onClick={() => {
+                      console.log(index)
+                      let x = [...horaire]
+                      x = x.filter((item, i) => {
+                        return i !== index
+                      })
+                      setHoraire(x)
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
                 </Stack>
               )
             })}

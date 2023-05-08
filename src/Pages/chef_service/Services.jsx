@@ -1,6 +1,5 @@
 import {
   Button,
-  Chip,
   Stack,
   Table,
   TableBody,
@@ -8,7 +7,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import Paper from '@mui/material/Paper'
@@ -18,31 +16,33 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import SettingsIcon from '@mui/icons-material/Settings'
 import HighlightOffIcon from '@mui/icons-material/HighlightOff'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
-import { useNavigate } from 'react-router-dom'
 import NeoButton from '../../Components/NeoButton'
-const Bureaux = () => {
-  const navigate = useNavigate()
-  const [bureaux, setBureaux] = useState([])
-  useEffect(() => {
-    axios
-      .get('http://127.0.0.1:5000/admin/bureau')
-      .then((response) => {
-        setBureaux(response.data)
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-  }, [])
+import FormService from './FormService'
+import { useDispatch, useSelector } from 'react-redux'
+import listeActions from '../../redux/actions'
+const LocalServices = () => {
+  const [type, setType] = useState('add')
+  const [open, setOpen] = useState(false)
+  const [serviceProps, setServiceProps] = useState(false)
+  const [services, setServices] = useState([])
+  const { statusService, user } = useSelector((state) => state)
+  const dispatch = useDispatch()
 
-  const deleteOffice = (idBureau) => {
+  useEffect(() => {
+    setServices(user.bureau.listeServices)
+    if (statusService !== null) {
+      dispatch({ type: listeActions.statusService, statusService: null })
+    }
+  }, [statusService])
+
+  const deleteService = (idService) => {
     axios
-      .delete('http://127.0.0.1:5000/admin/bureau', { data: { idBureau } })
+      .delete('http://127.0.0.1:5000/admin/service', { data: { idService } })
       .then((response) => {
         console.log(response.data)
-        setBureaux(response.data)
+        setServices(response.data)
       })
   }
-
   return (
     <Stack
       position={'absolute'}
@@ -53,11 +53,19 @@ const Bureaux = () => {
       pt={'200px'}
       spacing={3}
     >
+      <FormService
+        type={type}
+        service={serviceProps}
+        open={open}
+        handleClose={() => setOpen(false)}
+      />
       <NeoButton
-        text={'add Office'}
+        text={'add Service'}
         type={'success'}
         onClick={() => {
-          navigate('/add_bureau')
+          setType('add')
+          setOpen(true)
+          setServiceProps(null)
         }}
       />
       <TableContainer component={Paper}>
@@ -65,21 +73,19 @@ const Bureaux = () => {
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
-              <TableCell>localisation</TableCell>
-              <TableCell align="center">chefService</TableCell>
-              <TableCell align="center">Horaires</TableCell>
-              <TableCell align="center">Services</TableCell>
+              <TableCell>Name of Service</TableCell>
+              <TableCell align="center">crée le</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {bureaux.map((bureau) => (
+            {services.map((service) => (
               <TableRow
-                key={bureau._id}
+                key={service._id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {bureau.deletedAt === null ? (
+                  {service.deletedAt === null ? (
                     <CheckCircleOutlineIcon
                       htmlColor="green"
                       sx={{ fontSize: '30px' }}
@@ -92,76 +98,34 @@ const Bureaux = () => {
                   )}
                 </TableCell>
                 <TableCell component="th" scope="row">
-                  {`${bureau.localisation.gov} - ${bureau.localisation.city}`}
+                  {service.name}
                 </TableCell>
-                <TableCell align="center">
-                  {bureau.listeEmploye.chefService
-                    ? bureau.listeEmploye.chefService.nom +
-                      ' ' +
-                      bureau.listeEmploye.chefService.prenom
-                    : ''}
+                <TableCell component="th" scope="row" align="center">
+                  {dayjs(service.createdAt).format('YYYY-MM-DD HH:mm')}
                 </TableCell>
-                <TableCell align="center">
-                  {bureau.horaire.map((horaire, index) => {
-                    return (
-                      <Typography marginY={'5px'} key={index}>
-                        Du
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.dateDeb} `}
-                        </span>
-                        Jusqu'à
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.dateFin} `}
-                        </span>
-                        Du
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.heureDeb} `}
-                        </span>
-                        Au
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.heureFin} `}
-                        </span>
-                      </Typography>
-                    )
-                  })}
-                </TableCell>
-                <TableCell align="center">
-                  {bureau.listeServices.map((service, index) => {
-                    return (
-                      <Chip
-                        sx={{
-                          mr: '10px',
-                          bgcolor: service.deletedAt !== null ? 'red' : '',
-                        }}
-                        key={index}
-                        label={service.name}
-                      ></Chip>
-                    )
-                  })}
-                </TableCell>
-                <TableCell align="center">
-                  {dayjs(bureau.createdAt).format('YYYY-MM-DD HH:mm')}
-                </TableCell>
+
                 <TableCell
                   align="center"
                   sx={{ display: 'flex', justifyContent: 'space-around' }}
                 >
-                  {bureau.deletedAt === null && (
+                  {service.deletedAt === null && (
                     <Button
                       color="warning"
                       variant="contained"
                       startIcon={<SettingsIcon />}
                       onClick={() => {
-                        navigate('/edit_bureau', { state: { bureau } })
+                        setType('edit')
+                        setOpen(true)
+                        setServiceProps(service)
                       }}
                     >
                       Edit
                     </Button>
                   )}
 
-                  {bureau.deletedAt !== null ? (
+                  {service.deletedAt !== null ? (
                     <Button
-                      onClick={() => deleteOffice(bureau._id)}
+                      onClick={() => deleteService(service._id)}
                       color="success"
                       variant="contained"
                       startIcon={<DeleteForeverIcon />}
@@ -174,7 +138,7 @@ const Bureaux = () => {
                         if (
                           window.confirm('Are you sure to delete this office ?')
                         ) {
-                          deleteOffice(bureau._id)
+                          deleteService(service._id)
                         }
                       }}
                       color="error"
@@ -194,4 +158,4 @@ const Bureaux = () => {
   )
 }
 
-export default Bureaux
+export default LocalServices

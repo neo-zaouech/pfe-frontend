@@ -15,6 +15,9 @@ const reducer = (state = initialState, action) => {
     case listeActions.statusService: {
       return { ...state, statusService: action.statusService }
     }
+    case listeActions.addEmploye: {
+      return { ...state, user: { ...state.user, bureau: action.bureau } }
+    }
     default:
       return state
   }
