@@ -57,7 +57,7 @@ const Navbar = () => {
             onClick={() => {
               localStorage.setItem('user', null)
               dispatch({ type: listeActions.login, user: null })
-              navigate('/login')
+              navigate('/')
             }}
             text={'Déconnexion'}
             type={'delete'}

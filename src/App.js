@@ -7,7 +7,10 @@ import Bureaux from './Pages/Admin/Bureaux'
 import Login from './Pages/Login'
 import FormBureau from './Pages/Admin/FormBureau'
 import Services from './Pages/Admin/Services'
+import LocalServices from './Pages/chef_service/Services'
 import Users from './Pages/Admin/Users'
+import Chef_service from './Pages/chef_service'
+import LocalUsers from './Pages/chef_service/Users'
 
 function App() {
   const user = useSelector((state) => state.user)
@@ -25,6 +28,12 @@ function App() {
             <Route path="/add_bureau" element={<FormBureau type={'add'} />} />
             <Route path="/services" element={<Services />} />
             <Route path="/users" element={<Users />} />
+          </>
+        ) : user.role === 'chef_service' ? (
+          <>
+            <Route path="/" element={<Chef_service />} />
+            <Route path="/services" element={<LocalServices />} />
+            <Route path="/users" element={<LocalUsers />} />
           </>
         ) : (
           <Route path="/" element={<h1>Hello world</h1>} />
