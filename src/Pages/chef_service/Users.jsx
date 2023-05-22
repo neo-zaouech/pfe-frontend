@@ -43,13 +43,13 @@ const LocalUsers = () => {
       })
   }
 
-  const [users, setServices] = useState([])
+  const [allUsers, setAllUsers] = useState([])
 
   const getUsers = () => {
     axios
       .get('http://127.0.0.1:5000/admin/user')
       .then((response) => {
-        setServices(response.data)
+        setAllUsers(response.data)
       })
       .catch((error) => {})
   }
@@ -57,6 +57,28 @@ const LocalUsers = () => {
   useEffect(() => {
     getUsers()
   }, [user])
+
+  const actionUser = (data) => {
+    axios
+      .post('http://127.0.0.1:5000/chef_service/user', {
+        idGuichier: data.bureau._id,
+        idBureau: user.bureau._id,
+        action: data.action ? '' : 'affecter',
+      })
+      .then((response) => {
+        setOpen(false)
+        localStorage.setItem(
+          'user',
+          JSON.stringify({ ...user, bureau: response.data })
+        )
+        dispatch({ type: listeActions.statusUser, statusService: data.action })
+        dispatch({
+          type: listeActions.login,
+          user: { ...user, bureau: response.data },
+        })
+      })
+    console.log('sfbqsdjfqds', data)
+  }
 
   return (
     <Stack
@@ -68,12 +90,16 @@ const LocalUsers = () => {
       pt={'200px'}
       spacing={3}
     >
-      <FormUser
-        type={type}
-        user={serviceProps}
-        open={open}
-        handleClose={() => setOpen(false)}
-      />
+      {open && (
+        <FormUser
+          actionUser={actionUser}
+          type={type}
+          user={serviceProps}
+          allUsers={allUsers}
+          open={open}
+          handleClose={() => setOpen(false)}
+        />
+      )}
       <NeoButton
         text={'add User'}
         type={'success'}
@@ -92,107 +118,75 @@ const LocalUsers = () => {
               <TableCell align="center">Email</TableCell>
               <TableCell align="center">CIN</TableCell>
               <TableCell align="center">Role</TableCell>
-              <TableCell align="center">Bureau</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {employes.map((u, index) => {
+            {user.bureau.listeEmploye.employe.map((u, index) => {
               return (
                 <TableRow
                   key={u}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
+                  <TableCell></TableCell>
                   <TableCell component="th" scope="row">
-                    {users.find((lu) => {
-                      return lu._id == u
+                    {allUsers.find((lu) => {
+                      return lu._id == u._id
                     }) != undefined
-                      ? users.find((lu) => {
-                          return lu._id == u
-                        }).nom
+                      ? allUsers.find((lu) => {
+                          return lu._id == u._id
+                        }).nom +
+                        ' ' +
+                        allUsers.find((lu) => {
+                          return lu._id == u._id
+                        }).prenom
                       : ''}
                   </TableCell>
                   <TableCell component="th" scope="row" align="center">
-                    {users.find((lu) => {
-                      return lu._id == u
+                    {allUsers.find((lu) => {
+                      return lu._id == u._id
                     }) != undefined
-                      ? users.find((lu) => {
-                          return lu._id == u
+                      ? allUsers.find((lu) => {
+                          return lu._id == u._id
                         }).email
                       : ''}
                   </TableCell>
                   <TableCell component="th" scope="row" align="center">
-                    {users.find((lu) => {
-                      return lu._id == u
+                    {allUsers.find((lu) => {
+                      return lu._id == u._id
                     }) != undefined
-                      ? users.find((lu) => {
-                          return lu._id == u
+                      ? allUsers.find((lu) => {
+                          return lu._id == u._id
                         }).cin
                       : ''}
                   </TableCell>
                   <TableCell component="th" scope="row" align="center">
-                    {users.find((lu) => {
-                      return lu._id == u
+                    {allUsers.find((lu) => {
+                      return lu._id == u._id
                     }) != undefined
-                      ? users.find((lu) => {
-                          return lu._id == u
+                      ? allUsers.find((lu) => {
+                          return lu._id == u._id
                         }).role
                       : ''}
                   </TableCell>
-                  <TableCell component="th" scope="row" align="center">
-                    {users.find((lu) => {
-                      return lu._id == u
-                    }) != undefined
-                      ? users.find((lu) => {
-                          return lu._id == u
-                        }).bureau._id
-                      : ''}
-                  </TableCell>
+
                   <TableCell
                     align="center"
                     sx={{ display: 'flex', justifyContent: 'space-around' }}
                   >
-                    {u.deletedAt === null && (
-                      <Button
-                        color="warning"
-                        variant="contained"
-                        startIcon={<SettingsIcon />}
-                        onClick={() => {
-                          setType('edit')
-                          setOpen(true)
-                          setServiceProps(u)
-                        }}
-                      >
-                        Edit
-                      </Button>
-                    )}
-
-                    {u.deletedAt !== null ? (
-                      <Button
-                        onClick={() => deleteUser(u._id)}
-                        color="success"
-                        variant="contained"
-                        startIcon={<DeleteForeverIcon />}
-                      >
-                        Restore
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              'Are you sure to delete this office ?'
-                            )
-                          ) {
-                            deleteUser(u._id)
-                          }
-                        }}
-                        color="error"
-                        variant="contained"
-                        startIcon={<DeleteForeverIcon />}
-                      >
-                        Delete
-                      </Button>
-                    )}
+                    <Button
+                      onClick={() => {
+                        if (
+                          window.confirm('Are you sure to delete this office ?')
+                        ) {
+                          actionUser({ bureau: u, action: 'delete' })
+                        }
+                      }}
+                      color="error"
+                      variant="contained"
+                      startIcon={<DeleteForeverIcon />}
+                    >
+                      Delete
+                    </Button>
                   </TableCell>
                 </TableRow>
               )

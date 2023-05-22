@@ -11,15 +11,21 @@ import LocalServices from './Pages/chef_service/Services'
 import Users from './Pages/Admin/Users'
 import Chef_service from './Pages/chef_service'
 import LocalUsers from './Pages/chef_service/Users'
+import Anonyme from './Pages/Anonyme'
+import Guichier from './Pages/Guichier'
 
 function App() {
   const user = useSelector((state) => state.user)
+
   return (
     <div className="App">
       <Navbar />
       <Routes>
         {user === null ? (
-          <Route path="/" element={<Login />} />
+          <>
+            <Route path="/" element={<Anonyme />} />
+            <Route path="*" element={<Login />} />
+          </>
         ) : user.role === 'admin' ? (
           <>
             <Route path="/" element={<DashboardAdmin />} />
@@ -36,7 +42,10 @@ function App() {
             <Route path="/users" element={<LocalUsers />} />
           </>
         ) : (
-          <Route path="/" element={<h1>Hello world</h1>} />
+          <>
+            <Route path="/" element={<Guichier />} />
+            <Route path="/add_actualite" element={<Guichier />} />
+          </>
         )}
         <Route path="/about" element={<About />} />
         <Route path="*" element={<h1>404</h1>} />

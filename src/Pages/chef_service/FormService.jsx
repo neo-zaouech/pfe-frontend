@@ -4,12 +4,13 @@ import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal'
 import NeoButton from '../../Components/NeoButton'
-import { TextField } from '@mui/material'
+import { Autocomplete, TextField } from '@mui/material'
 import { useState } from 'react'
 import axios from 'axios'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import listeActions from '../../redux/actions'
 import { useEffect } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 
 const style = {
   position: 'absolute',
@@ -24,33 +25,34 @@ const style = {
   textAlign: 'center',
 }
 
-export default function FormService({ type, service, open, handleClose }) {
+export default function FormService({
+  type,
+  service,
+  open,
+  allServices,
+  handleClose,
+  actionService,
+}) {
   const [name, setName] = useState(type === 'add' ? '' : service.name)
   const dispatch = useDispatch()
-
-  const actionService = () => {
-    if (type === 'add') {
-      axios
-        .post('http://127.0.0.1:5000/admin/service', {
-          name,
-        })
-        .then((response) => {
-          handleClose()
-          dispatch({ type: listeActions.statusService, statusService: 'add' })
-        })
-        .catch((error) => {})
-    } else {
-      axios
-        .put('http://127.0.0.1:5000/admin/service', {
-          serviceReq: { ...service, name },
-        })
-        .then((response) => {
-          handleClose()
-          dispatch({ type: listeActions.statusService, statusService: 'edit' })
-        })
-        .catch((error) => {})
-    }
+  const { control, handleSubmit } = useForm({
+    defaultValues: { service: null, action: 'affecter' },
+  })
+  const user = useSelector((state) => state.user)
+  const [services, setServices] = useState([])
+  const getServices = () => {
+    axios
+      .get('http://127.0.0.1:5000/admin/service')
+      .then((response) => {
+        setServices(response.data)
+      })
+      .catch((error) => {})
   }
+
+  useEffect(() => {
+    console.log(allServices)
+    getServices()
+  }, [])
 
   useEffect(() => {
     if (type === 'edit') {
@@ -69,25 +71,44 @@ export default function FormService({ type, service, open, handleClose }) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-            }}
-          >
-            <TextField
-              sx={{ mb: '30px' }}
-              fullWidth
-              label={'Name of service'}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
+          <form onSubmit={handleSubmit(actionService)}>
+            <Controller
+              name="service"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <Autocomplete
+                  fullWidth
+                  includeInputInList
+                  id="tags-standard"
+                  options={allServices.filter((s) => {
+                    return (
+                      s.deletedAt === null &&
+                      user.bureau.listeServices.filter((ls) => {
+                        return s._id === ls._id
+                      }).length === 0
+                    )
+                  })}
+                  getOptionLabel={(option) => option.name}
+                  defaultValue={null}
+                  onChange={(event, item) => {
+                    onChange(item)
+                  }}
+                  isOptionEqualToValue={(option, value) =>
+                    option.name === value.name
+                  }
+                  value={value}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label="Liste des bureaux"
+                      placeholder="Bureaux"
+                    />
+                  )}
+                />
+              )}
             />
-            <NeoButton
-              text={type === 'add' ? 'Add new' : 'Edit'}
-              type={type === 'add' ? 'success' : 'edit'}
-              onClick={() => {
-                actionService()
-              }}
-            />
+            <NeoButton text={'Affecter'} type={'success'} />
           </form>
         </Box>
       </Modal>

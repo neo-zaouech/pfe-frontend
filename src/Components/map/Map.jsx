@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import React from 'react'
 import ChoroplethMap from '../ChoroplethMap'
 
-const Map = ({ gov, setGov }) => {
-  const state = useSelector((state) => state)
+const Map = ({ setGov }) => {
   var i = 1
   let data = [
     ['TO', i++],
@@ -35,10 +33,10 @@ const Map = ({ gov, setGov }) => {
     <div
       style={{
         position: 'absolute',
-        top: '150px',
-        left: '200px',
-        height: '10vh',
-        width: '15vw',
+        top: '0px',
+        left: '150px',
+        height: '20vh',
+        width: '40vw',
       }}
     >
       <ChoroplethMap data={data} setGov={setGov} />

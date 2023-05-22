@@ -21,7 +21,11 @@ const Navbar = () => {
       borderRadius={'0 0 91px 91px'}
     >
       <img
-        style={{ objectFit: 'contain' }}
+        onClick={() => {
+          navigate('/')
+        }}
+        alt=""
+        style={{ objectFit: 'contain', cursor: 'pointer' }}
         src={window.location.origin + '/logo.png'}
         height={'100%'}
         width={'100px'}
@@ -32,14 +36,14 @@ const Navbar = () => {
             onClick={() => {
               navigate('/')
             }}
-            text={'Actualité'}
+            text={'Acceuil'}
             type={location.pathname === '/' ? 'info' : 'none'}
           />
         )}
         {user === null && (
           <NeoButton
             onClick={() => {
-              navigate('/')
+              navigate('/login')
             }}
             text={'Connection'}
             type={location.pathname === '/' ? 'info' : 'none'}

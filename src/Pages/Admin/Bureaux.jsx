@@ -8,10 +8,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Typography,
+  Paper,
 } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import Paper from '@mui/material/Paper'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
@@ -20,9 +21,13 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import { useNavigate } from 'react-router-dom'
 import NeoButton from '../../Components/NeoButton'
+import governments from '../../goverments'
+import InputAdornment from '@mui/material/InputAdornment'
+import ScreenSearchDesktopIcon from '@mui/icons-material/ScreenSearchDesktop'
 const Bureaux = () => {
   const navigate = useNavigate()
   const [bureaux, setBureaux] = useState([])
+  const [search, setSearch] = useState('')
   useEffect(() => {
     axios
       .get('http://127.0.0.1:5000/admin/bureau')
@@ -53,13 +58,29 @@ const Bureaux = () => {
       pt={'200px'}
       spacing={3}
     >
-      <NeoButton
-        text={'add Office'}
-        type={'success'}
-        onClick={() => {
-          navigate('/add_bureau')
-        }}
-      />
+      <Stack direction={'row'} spacing={5}>
+        <NeoButton
+          text={'add Office'}
+          type={'success'}
+          onClick={() => {
+            navigate('/add_bureau')
+          }}
+        />
+        <TextField
+          id="input-with-icon-textfield"
+          label="Rechercher"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <ScreenSearchDesktopIcon />
+              </InputAdornment>
+            ),
+          }}
+          variant="outlined"
+        />
+      </Stack>
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>
@@ -73,120 +94,140 @@ const Bureaux = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {bureaux.map((bureau) => (
-              <TableRow
-                key={bureau._id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {bureau.deletedAt === null ? (
-                    <CheckCircleOutlineIcon
-                      htmlColor="green"
-                      sx={{ fontSize: '30px' }}
-                    />
-                  ) : (
-                    <HighlightOffIcon
-                      htmlColor="red"
-                      sx={{ fontSize: '30px' }}
-                    />
-                  )}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {`${bureau.localisation.gov} - ${bureau.localisation.city}`}
-                </TableCell>
-                <TableCell align="center">
-                  {bureau.listeEmploye.chefService
-                    ? bureau.listeEmploye.chefService.nom +
-                      ' ' +
-                      bureau.listeEmploye.chefService.prenom
-                    : ''}
-                </TableCell>
-                <TableCell align="center">
-                  {bureau.horaire.map((horaire, index) => {
-                    return (
-                      <Typography marginY={'5px'} key={index}>
-                        Du
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.dateDeb} `}
-                        </span>
-                        Jusqu'à
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.dateFin} `}
-                        </span>
-                        Du
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.heureDeb} `}
-                        </span>
-                        Au
-                        <span style={{ fontWeight: 900 }}>
-                          {` ${horaire.heureFin} `}
-                        </span>
-                      </Typography>
-                    )
-                  })}
-                </TableCell>
-                <TableCell align="center">
-                  {bureau.listeServices.map((service, index) => {
-                    return (
-                      <Chip
-                        sx={{
-                          mr: '10px',
-                          bgcolor: service.deletedAt !== null ? 'red' : '',
-                        }}
-                        key={index}
-                        label={service.name}
-                      ></Chip>
-                    )
-                  })}
-                </TableCell>
-                <TableCell align="center">
-                  {dayjs(bureau.createdAt).format('YYYY-MM-DD HH:mm')}
-                </TableCell>
-                <TableCell
-                  align="center"
-                  sx={{ display: 'flex', justifyContent: 'space-around' }}
+            {bureaux
+              .filter((bureau) => {
+                return (
+                  governments
+                    .find((governement) => {
+                      return governement.code === bureau.localisation.gov
+                    })
+                    .name.toUpperCase()
+                    .includes(search.toUpperCase()) ||
+                  bureau.localisation.city
+                    .toUpperCase()
+                    .includes(search.toUpperCase())
+                )
+              })
+              .map((bureau) => (
+                <TableRow
+                  key={bureau._id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
-                  {bureau.deletedAt === null && (
-                    <Button
-                      color="warning"
-                      variant="contained"
-                      startIcon={<SettingsIcon />}
-                      onClick={() => {
-                        navigate('/edit_bureau', { state: { bureau } })
-                      }}
-                    >
-                      Edit
-                    </Button>
-                  )}
+                  <TableCell component="th" scope="row">
+                    {bureau.deletedAt === null ? (
+                      <CheckCircleOutlineIcon
+                        htmlColor="green"
+                        sx={{ fontSize: '30px' }}
+                      />
+                    ) : (
+                      <HighlightOffIcon
+                        htmlColor="red"
+                        sx={{ fontSize: '30px' }}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell component="th" scope="row">
+                    {`${
+                      governments.find((governement) => {
+                        return governement.code === bureau.localisation.gov
+                      }).name
+                    } - ${bureau.localisation.city}`}
+                  </TableCell>
+                  <TableCell align="center">
+                    {bureau.listeEmploye.chefService
+                      ? bureau.listeEmploye.chefService.nom +
+                        ' ' +
+                        bureau.listeEmploye.chefService.prenom
+                      : ''}
+                  </TableCell>
+                  <TableCell align="center">
+                    {bureau.horaire.map((horaire, index) => {
+                      return (
+                        <Typography marginY={'5px'} key={index}>
+                          Du
+                          <span style={{ fontWeight: 900 }}>
+                            {` ${horaire.dateDeb} `}
+                          </span>
+                          Jusqu'à
+                          <span style={{ fontWeight: 900 }}>
+                            {` ${horaire.dateFin} `}
+                          </span>
+                          Du
+                          <span style={{ fontWeight: 900 }}>
+                            {` ${horaire.heureDeb} `}
+                          </span>
+                          Au
+                          <span style={{ fontWeight: 900 }}>
+                            {` ${horaire.heureFin} `}
+                          </span>
+                        </Typography>
+                      )
+                    })}
+                  </TableCell>
+                  <TableCell align="center">
+                    {bureau.listeServices.map((service, index) => {
+                      return (
+                        <Chip
+                          sx={{
+                            mr: '10px',
+                            bgcolor: service.deletedAt !== null ? 'red' : '',
+                          }}
+                          key={index}
+                          label={service.name}
+                        ></Chip>
+                      )
+                    })}
+                  </TableCell>
+                  <TableCell align="center">
+                    {dayjs(bureau.createdAt).format('YYYY-MM-DD HH:mm')}
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{ display: 'flex', justifyContent: 'space-around' }}
+                  >
+                    {bureau.deletedAt === null && (
+                      <Button
+                        color="warning"
+                        variant="contained"
+                        startIcon={<SettingsIcon />}
+                        onClick={() => {
+                          navigate('/edit_bureau', { state: { bureau } })
+                        }}
+                      >
+                        Edit
+                      </Button>
+                    )}
 
-                  {bureau.deletedAt !== null ? (
-                    <Button
-                      onClick={() => deleteOffice(bureau._id)}
-                      color="success"
-                      variant="contained"
-                      startIcon={<DeleteForeverIcon />}
-                    >
-                      Restore
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => {
-                        if (
-                          window.confirm('Are you sure to delete this office ?')
-                        ) {
-                          deleteOffice(bureau._id)
-                        }
-                      }}
-                      color="error"
-                      variant="contained"
-                      startIcon={<DeleteForeverIcon />}
-                    >
-                      Delete
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+                    {bureau.deletedAt !== null ? (
+                      <Button
+                        onClick={() => deleteOffice(bureau._id)}
+                        color="success"
+                        variant="contained"
+                        startIcon={<DeleteForeverIcon />}
+                      >
+                        Restore
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              'Are you sure to delete this office ?'
+                            )
+                          ) {
+                            deleteOffice(bureau._id)
+                          }
+                        }}
+                        color="error"
+                        variant="contained"
+                        startIcon={<DeleteForeverIcon />}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
