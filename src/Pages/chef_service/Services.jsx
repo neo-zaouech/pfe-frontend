@@ -7,6 +7,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import Paper from '@mui/material/Paper'
@@ -25,22 +26,60 @@ const LocalServices = () => {
   const [open, setOpen] = useState(false)
   const [serviceProps, setServiceProps] = useState(false)
   const [services, setServices] = useState([])
+  const [allServices, setAllServices] = useState([])
   const { statusService, user } = useSelector((state) => state)
   const dispatch = useDispatch()
 
+  const getServices = () => {
+    axios
+      .get('http://127.0.0.1:5000/admin/service')
+      .then((response) => {
+        setAllServices(response.data)
+      })
+      .catch((error) => {})
+  }
   useEffect(() => {
-    setServices(user.bureau.listeServices)
+    getServices()
+    setServices(user.bureau ? user.bureau.listeServices : [])
     if (statusService !== null) {
       dispatch({ type: listeActions.statusService, statusService: null })
     }
   }, [statusService])
 
-  const deleteService = (idService) => {
+  // const deleteService = (idService) => {
+  //   axios
+  //     .delete('http://127.0.0.1:5000/admin/service', { data: { idService } })
+  //     .then((response) => {
+  //       localStorage.setItem(
+  //         'user',
+  //         JSON.stringify({ ...user, bureau: response.data.bureau })
+  //       )
+  //       dispatch({
+  //         type: listeActions.login,
+  //         user: { ...user, bureau: response.data.bureau },
+  //       })
+  //       setServices(response.data.bureau.listeServices)
+  //     })
+  // }
+
+  const actionService = (data) => {
     axios
-      .delete('http://127.0.0.1:5000/admin/service', { data: { idService } })
+      .post('http://127.0.0.1:5000/chef_service/service', {
+        idService: data.service._id,
+        idBureau: user.bureau._id,
+        action: data.action,
+      })
       .then((response) => {
-        console.log(response.data)
-        setServices(response.data)
+        setOpen(false)
+        localStorage.setItem(
+          'user',
+          JSON.stringify({ ...user, bureau: response.data })
+        )
+        dispatch({ type: listeActions.statusService, statusService: 'delete' })
+        dispatch({
+          type: listeActions.login,
+          user: { ...user, bureau: response.data },
+        })
       })
   }
   return (
@@ -53,107 +92,94 @@ const LocalServices = () => {
       pt={'200px'}
       spacing={3}
     >
-      <FormService
-        type={type}
-        service={serviceProps}
-        open={open}
-        handleClose={() => setOpen(false)}
-      />
-      <NeoButton
-        text={'add Service'}
-        type={'success'}
-        onClick={() => {
-          setType('add')
-          setOpen(true)
-          setServiceProps(null)
-        }}
-      />
-      <TableContainer component={Paper}>
-        <Table aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell></TableCell>
-              <TableCell>Name of Service</TableCell>
-              <TableCell align="center">crée le</TableCell>
-              <TableCell align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {services.map((service) => (
-              <TableRow
-                key={service._id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {service.deletedAt === null ? (
-                    <CheckCircleOutlineIcon
-                      htmlColor="green"
-                      sx={{ fontSize: '30px' }}
-                    />
-                  ) : (
-                    <HighlightOffIcon
-                      htmlColor="red"
-                      sx={{ fontSize: '30px' }}
-                    />
-                  )}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {service.name}
-                </TableCell>
-                <TableCell component="th" scope="row" align="center">
-                  {dayjs(service.createdAt).format('YYYY-MM-DD HH:mm')}
-                </TableCell>
+      {open && (
+        <FormService
+          actionService={actionService}
+          type={type}
+          service={serviceProps}
+          allServices={allServices}
+          open={open}
+          handleClose={() => setOpen(false)}
+        />
+      )}
+      {user.bureau ? (
+        <>
+          {' '}
+          <NeoButton
+            text={'Affecter Service'}
+            type={'success'}
+            onClick={() => {
+              setType('add')
+              setOpen(true)
+              setServiceProps(null)
+            }}
+          />
+          <TableContainer component={Paper}>
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell>Name of Service</TableCell>
+                  <TableCell align="center">crée le</TableCell>
+                  <TableCell align="center">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {services.reverse().map((service) => (
+                  <TableRow
+                    key={service._id + '' + Math.random()}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell component="th" scope="row">
+                      {service.deletedAt === null ? (
+                        <CheckCircleOutlineIcon
+                          htmlColor="green"
+                          sx={{ fontSize: '30px' }}
+                        />
+                      ) : (
+                        <HighlightOffIcon
+                          htmlColor="red"
+                          sx={{ fontSize: '30px' }}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell component="th" scope="row">
+                      {service.name}
+                    </TableCell>
+                    <TableCell component="th" scope="row" align="center">
+                      {dayjs(service.createdAt).format('YYYY-MM-DD HH:mm')}
+                    </TableCell>
 
-                <TableCell
-                  align="center"
-                  sx={{ display: 'flex', justifyContent: 'space-around' }}
-                >
-                  {service.deletedAt === null && (
-                    <Button
-                      color="warning"
-                      variant="contained"
-                      startIcon={<SettingsIcon />}
-                      onClick={() => {
-                        setType('edit')
-                        setOpen(true)
-                        setServiceProps(service)
-                      }}
+                    <TableCell
+                      align="center"
+                      sx={{ display: 'flex', justifyContent: 'space-around' }}
                     >
-                      Edit
-                    </Button>
-                  )}
-
-                  {service.deletedAt !== null ? (
-                    <Button
-                      onClick={() => deleteService(service._id)}
-                      color="success"
-                      variant="contained"
-                      startIcon={<DeleteForeverIcon />}
-                    >
-                      Restore
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => {
-                        if (
-                          window.confirm('Are you sure to delete this office ?')
-                        ) {
-                          deleteService(service._id)
-                        }
-                      }}
-                      color="error"
-                      variant="contained"
-                      startIcon={<DeleteForeverIcon />}
-                    >
-                      Delete
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                      <Button
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              'Are you sure to delete this office ?'
+                            )
+                          ) {
+                            actionService({ service, action: 'désaffecter' })
+                          }
+                        }}
+                        color="error"
+                        variant="contained"
+                        startIcon={<DeleteForeverIcon />}
+                      >
+                        Désaffecter
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      ) : (
+        <Typography>Vous n'etes pas affecté au aucun bureau</Typography>
+      )}
     </Stack>
   )
 }

@@ -16,13 +16,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Map from '../../Components/map/Map'
 import governments from '../../goverments'
-import {
-  DateTimePicker,
-  LocalizationProvider,
-  TimePicker,
-} from '@mui/x-date-pickers'
+import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { DayCalendar } from '@mui/x-date-pickers/internals'
 import dayjs from 'dayjs'
 import { Label } from '@mui/icons-material'
 import CloseIcon from '@mui/icons-material/Close'
@@ -40,7 +35,7 @@ const FormBureau = ({ type }) => {
     type === 'add' ? [] : route.state.bureau.horaire
   )
 
-  const { control, handleSubmit, reset } = useForm({
+  const { control, handleSubmit } = useForm({
     defaultValues:
       type === 'add'
         ? {
@@ -111,8 +106,9 @@ const FormBureau = ({ type }) => {
       <Stack
         justifyContent={'center'}
         alignItems={'center'}
-        pt={10}
+        p={10}
         direction={'row'}
+        height={'100%'}
       >
         <span hidden>{gov}</span>
         <Map gov={gov} setGov={setGov} />
@@ -226,6 +222,10 @@ const FormBureau = ({ type }) => {
               )}
             />
             <Typography
+              sx={{
+                cursor: 'pointer',
+                zIndex: 1000,
+              }}
               onClick={() => {
                 setHoraire([
                   ...horaire,

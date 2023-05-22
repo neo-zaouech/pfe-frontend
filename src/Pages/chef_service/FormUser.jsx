@@ -33,80 +33,22 @@ const style = {
   textAlign: 'center',
 }
 
-export default function FormUser({ type, open, handleClose }) {
+export default function FormUser({
+  type,
+  open,
+  allUsers,
+  handleClose,
+  actionUser,
+}) {
   const dispatch = useDispatch()
   const [bureaux, setBureaux] = useState([])
   const user = useSelector((state) => state.user)
   const { control, handleSubmit, reset, watch } = useForm({
     defaultValues: {
-      email: type === 'add' ? '' : user.email,
-      nom: type === 'add' ? '' : user.nom,
-      motPasse: type === 'add' ? '' : user.motPasse,
-      prenom: type === 'add' ? '' : user.prenom,
-      cin: type === 'add' ? '' : user.cin,
-      role: 'guichier',
+      bureau: null,
+      action: 'affecter',
     },
   })
-
-  const getBreaux = () => {
-    axios
-      .get('http://127.0.0.1:5000/admin/bureau')
-      .then((response) => {
-        setBureaux(response.data)
-      })
-      .catch((error) => {})
-  }
-
-  const actionService = (data) => {
-    const { email, nom, prenom, cin, role, motPasse } = data
-    if (type === 'add') {
-      axios
-        .post('http://127.0.0.1:5000/admin/user', {
-          email,
-          nom,
-          motPasse,
-          prenom,
-          cin,
-          role: 'guichier',
-          bureau: user.bureau,
-        })
-        .then((response) => {
-          localStorage.setItem(
-            'user',
-            JSON.stringify({ ...user, bureau: response.data })
-          )
-          dispatch({ type: listeActions.addEmploye, bureau: response.data })
-          window.location.reload()
-        })
-        .catch((error) => {})
-    } else {
-      axios
-        .put('http://127.0.0.1:5000/admin/user', {
-          userReq: {
-            ...user,
-            email,
-            nom,
-            prenom,
-            cin,
-            role,
-            bureau: user.bureau,
-          },
-        })
-        .then((response) => {
-          handleClose()
-          localStorage.setItem(
-            'user',
-            JSON.stringify({ ...user, bureau: response.data })
-          )
-          dispatch({ type: listeActions.addEmploye, bureau: response.data })
-        })
-        .catch((error) => {})
-    }
-  }
-
-  useEffect(() => {
-    getBreaux()
-  }, [])
 
   useEffect(() => {
     reset({
@@ -128,107 +70,46 @@ export default function FormUser({ type, open, handleClose }) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <form onSubmit={handleSubmit(actionService)}>
-            <Stack spacing={3} alignItems={'center'}>
-              <Controller
-                name={'nom'}
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextField
-                    fullWidth
-                    value={value}
-                    onChange={onChange}
-                    label={'First Name'}
-                  />
-                )}
-              />
-              <Controller
-                name={'prenom'}
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextField
-                    fullWidth
-                    value={value}
-                    onChange={onChange}
-                    label={'Last Name'}
-                  />
-                )}
-              />
-              <Controller
-                name={'motPasse'}
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextField
-                    hidden={type === 'edit'}
-                    type="password"
-                    fullWidth
-                    value={value}
-                    onChange={onChange}
-                    label={'Password'}
-                  />
-                )}
-              />
-              <Controller
-                name={'cin'}
-                control={control}
-                rules={{
-                  required: { value: true, message: 'CIN required' },
-                  minLength: { value: 8, message: 'Length must be 8' },
-                  maxLength: { value: 8, message: 'Length must be 8' },
-                }}
-                render={({
-                  field: { value, onChange },
-                  fieldState: { error },
-                }) => (
-                  <TextField
-                    fullWidth
-                    type="number"
-                    value={value}
-                    onChange={onChange}
-                    label={'CIN'}
-                    error={!!error}
-                    helperText={error && error.message}
-                  />
-                )}
-              />
-              <Controller
-                name={'email'}
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextField
-                    fullWidth
-                    type="email"
-                    value={value}
-                    onChange={onChange}
-                    label={'Email'}
-                  />
-                )}
-              />
-              <Controller
-                name={'role'}
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">Role</InputLabel>
-                    <Select
-                      disabled
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      value={'guichier'}
-                      label="Role"
-                      onChange={onChange}
-                    >
-                      <MenuItem value={'guichier'}>Guichier</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
-
-              <NeoButton
-                text={type === 'add' ? 'Add new' : 'Edit'}
-                type={type === 'add' ? 'success' : 'edit'}
-              />
-            </Stack>
+          <form onSubmit={handleSubmit(actionUser)}>
+            <Controller
+              name="bureau"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <Autocomplete
+                  fullWidth
+                  includeInputInList
+                  id="tags-standard"
+                  options={allUsers.filter((s) => {
+                    return (
+                      s.deletedAt === null &&
+                      s.role === 'guichier' &&
+                      user.bureau.listeEmploye.employe.filter((ls) => {
+                        return s._id === ls._id
+                      }).length === 0
+                    )
+                  })}
+                  getOptionLabel={(option) => option.nom + ' ' + option.prenom}
+                  defaultValue={null}
+                  onChange={(event, item) => {
+                    onChange(item)
+                  }}
+                  isOptionEqualToValue={(option, value) =>
+                    option.nom + ' ' + option.prenom ===
+                    value.nom + ' ' + value.prenom
+                  }
+                  value={value}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label="Liste des bureaux"
+                      placeholder="Bureaux"
+                    />
+                  )}
+                />
+              )}
+            />
+            <NeoButton text={'Affecter'} type={'success'} />
           </form>
         </Box>
       </Modal>

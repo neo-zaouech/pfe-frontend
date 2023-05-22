@@ -73,7 +73,7 @@ export default function FormUser({ type, user, open, handleClose }) {
         })
         .then((response) => {
           handleClose()
-          dispatch({ type: listeActions.statusService, statusService: 'add' })
+          dispatch({ type: listeActions.statusUser, statusUser: 'add' })
         })
         .catch((error) => {})
     } else {
@@ -83,7 +83,7 @@ export default function FormUser({ type, user, open, handleClose }) {
         })
         .then((response) => {
           handleClose()
-          dispatch({ type: listeActions.statusService, statusService: 'edit' })
+          dispatch({ type: listeActions.statusUser, statusUser: 'edit' })
         })
         .catch((error) => {})
     }

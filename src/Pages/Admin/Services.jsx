@@ -1,5 +1,6 @@
 import {
   Button,
+  InputAdornment,
   Stack,
   Table,
   TableBody,
@@ -7,6 +8,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
 } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import Paper from '@mui/material/Paper'
@@ -20,12 +22,16 @@ import NeoButton from '../../Components/NeoButton'
 import FormService from './FormService'
 import { useDispatch, useSelector } from 'react-redux'
 import listeActions from '../../redux/actions'
+import ScreenSearchDesktopIcon from '@mui/icons-material/ScreenSearchDesktop'
+
 const Services = () => {
   const [type, setType] = useState('add')
   const [open, setOpen] = useState(false)
   const [serviceProps, setServiceProps] = useState(false)
   const [services, setServices] = useState([])
   const statusService = useSelector((state) => state.statusService)
+  const [search, setSearch] = useState('')
+
   const dispatch = useDispatch()
   const getServices = () => {
     axios
@@ -67,15 +73,31 @@ const Services = () => {
         open={open}
         handleClose={() => setOpen(false)}
       />
-      <NeoButton
-        text={'add Service'}
-        type={'success'}
-        onClick={() => {
-          setType('add')
-          setOpen(true)
-          setServiceProps(null)
-        }}
-      />
+      <Stack direction={'row'} spacing={5}>
+        <NeoButton
+          text={'add Service'}
+          type={'success'}
+          onClick={() => {
+            setType('add')
+            setOpen(true)
+            setServiceProps(null)
+          }}
+        />
+        <TextField
+          id="input-with-icon-textfield"
+          label="Rechercher"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <ScreenSearchDesktopIcon />
+              </InputAdornment>
+            ),
+          }}
+          variant="outlined"
+        />
+      </Stack>
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>

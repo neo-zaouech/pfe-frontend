@@ -1,59 +1,31 @@
-import React, { Component, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Datamap from 'datamaps/dist/datamaps.tun'
 import d3 from 'd3'
 import TunisiaJson from './Tunisia.topo.json'
 
-// class ChoroplethMap extends Component {
-
-//   render() {
-//     return (
-//       <div
-//         id="cloropleth_map"
-//         style={{
-//           width: '500%',
-//           height: '600%',
-//         }}
-//       ></div>
-//     )
-//   }
-// }
-
-// export default ChoroplethMap
-
 const ChoroplethMap = ({ data, setGov }) => {
   const [gov, setTempGov] = useState('')
   useEffect(() => {
-    // Datamaps expect data in format:
-    // { "USA": { "fillColor": "#42a844", numberOfWhatever: 75},
-    //   "FRA": { "fillColor": "#8dc386", numberOfWhatever: 43 } }
     let dataset = {}
 
-    // We need to colorize every country based on "numberOfWhatever"
-    // colors should be uniq for every value.
-    // For this purpose we create palette(using min/max data-value)
     let onlyValues = data.map(function (obj) {
       return obj[1]
     })
     let minValue = Math.min.apply(null, onlyValues),
       maxValue = Math.max.apply(null, onlyValues)
 
-    // create color palette function
-    // color can be whatever you wish
     let paletteScale = d3.scale
       .linear()
       .domain([minValue, maxValue])
-      .range(['#EFEFFF', '#02386F']) // blue color
+      .range(['#EFEFFF', '#02386F'])
 
-    // fill dataset in appropriate format
     data.forEach(function (item) {
-      //
-      // item example value ["USA", 70]
       let iso = item[0],
         value = item[1]
       dataset[iso] = { numberOfThings: value, fillColor: paletteScale(value) }
     })
 
-    let map = new Datamap({
+    const map = new Datamap({
       element: document.getElementById('cloropleth_map'),
       scope: 'tunisia',
       geographyConfig: {
@@ -64,14 +36,12 @@ const ChoroplethMap = ({ data, setGov }) => {
         borderWidth: 0.5,
         dataJson: TunisiaJson,
         popupTemplate: function (geo, data) {
-          // don't show tooltip if country don't present in dataset
           if (!data) {
             return
           } else {
             setTempGov(geo.properties.name)
           }
 
-          // tooltip content
           return [
             '<div className="hoverinfo">',
             '<strong>',
@@ -93,7 +63,7 @@ const ChoroplethMap = ({ data, setGov }) => {
       setProjection: function (element) {
         var projection = d3.geo
           .mercator()
-          .center([20, 35]) // always in [East Latitude, North Longitude]
+          .center([20, 35])
           .scale(2000)
           .translate([element.offsetWidth / 2, element.offsetHeight / 2])
 
@@ -118,8 +88,9 @@ const ChoroplethMap = ({ data, setGov }) => {
     <div
       id="cloropleth_map"
       style={{
-        width: '400%',
+        width: '200%',
         height: '500%',
+        marginTop: '80px',
       }}
     ></div>
   )
