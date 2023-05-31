@@ -38,6 +38,13 @@ const Dashboard = () => {
           navigate('/users')
         }}
       />
+      <NeoButton
+        text={'Réclamations'}
+        type={'info'}
+        onClick={() => {
+          navigate('/reclamations')
+        }}
+      />
     </Stack>
   )
 }
