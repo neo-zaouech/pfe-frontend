@@ -55,7 +55,6 @@ const Anonyme = () => {
         sx={{
           background: 'linear-gradient(#fdc613,transparent,#081d5c)',
           top: '-180px',
-          zIndex: ' -20 ',
         }}
       >
         <Box width={'50vw'}>

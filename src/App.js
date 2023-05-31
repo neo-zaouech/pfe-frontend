@@ -13,6 +13,9 @@ import Chef_service from './Pages/chef_service'
 import LocalUsers from './Pages/chef_service/Users'
 import Anonyme from './Pages/Anonyme'
 import Guichier from './Pages/Guichier'
+import Reclamation from './Pages/Anonyme/Reclamation'
+import Reclamations from './Pages/Admin/Reclamations'
+import ShowReclamation from './Pages/Admin/ShowReclamation'
 
 function App() {
   const user = useSelector((state) => state.user)
@@ -24,6 +27,7 @@ function App() {
         {user === null ? (
           <>
             <Route path="/" element={<Anonyme />} />
+            <Route path="/reclamation" element={<Reclamation />} />
             <Route path="*" element={<Login />} />
           </>
         ) : user.role === 'admin' ? (
@@ -34,6 +38,8 @@ function App() {
             <Route path="/add_bureau" element={<FormBureau type={'add'} />} />
             <Route path="/services" element={<Services />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/reclamations" element={<Reclamations />} />
+            <Route path="/reclamation" element={<ShowReclamation />} />
           </>
         ) : user.role === 'chef_service' ? (
           <>

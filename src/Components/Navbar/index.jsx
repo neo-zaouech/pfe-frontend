@@ -19,6 +19,8 @@ const Navbar = () => {
       width={'calc(100%-180px)'}
       bgcolor={'#CFCFCF'}
       borderRadius={'0 0 91px 91px'}
+      zIndex={10000}
+      position={'sticky'}
     >
       <img
         onClick={() => {
@@ -41,13 +43,22 @@ const Navbar = () => {
           />
         )}
         {user === null && (
-          <NeoButton
-            onClick={() => {
-              navigate('/login')
-            }}
-            text={'Connection'}
-            type={location.pathname === '/' ? 'info' : 'none'}
-          />
+          <>
+            <NeoButton
+              onClick={() => {
+                navigate('/login')
+              }}
+              text={'Connection'}
+              type={location.pathname === '/' ? 'info' : 'none'}
+            />
+            <NeoButton
+              onClick={() => {
+                navigate('/reclamation')
+              }}
+              text={'Reclamation'}
+              type={location.pathname === '/reclamation' ? 'info' : 'none'}
+            />
+          </>
         )}
         <NeoButton
           onClick={() => {
