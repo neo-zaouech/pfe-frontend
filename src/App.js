@@ -16,6 +16,7 @@ import Guichier from './Pages/Guichier'
 import Reclamation from './Pages/Anonyme/Reclamation'
 import Reclamations from './Pages/Admin/Reclamations'
 import ShowReclamation from './Pages/Admin/ShowReclamation'
+import Discussions from './Pages/Message'
 
 function App() {
   const user = useSelector((state) => state.user)
@@ -30,27 +31,35 @@ function App() {
             <Route path="/reclamation" element={<Reclamation />} />
             <Route path="*" element={<Login />} />
           </>
-        ) : user.role === 'admin' ? (
-          <>
-            <Route path="/" element={<DashboardAdmin />} />
-            <Route path="/bureaux" element={<Bureaux />} />
-            <Route path="/edit_bureau" element={<FormBureau />} />
-            <Route path="/add_bureau" element={<FormBureau type={'add'} />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/reclamations" element={<Reclamations />} />
-            <Route path="/reclamation" element={<ShowReclamation />} />
-          </>
-        ) : user.role === 'chef_service' ? (
-          <>
-            <Route path="/" element={<Chef_service />} />
-            <Route path="/services" element={<LocalServices />} />
-            <Route path="/users" element={<LocalUsers />} />
-          </>
         ) : (
           <>
-            <Route path="/" element={<Guichier />} />
-            <Route path="/add_actualite" element={<Guichier />} />
+            <Route path="message" element={<Discussions />} />
+            {user.role === 'admin' ? (
+              <>
+                <Route path="/" element={<DashboardAdmin />} />
+                <Route path="/bureaux" element={<Bureaux />} />
+                <Route path="/edit_bureau" element={<FormBureau />} />
+                <Route
+                  path="/add_bureau"
+                  element={<FormBureau type={'add'} />}
+                />
+                <Route path="/services" element={<Services />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/reclamations" element={<Reclamations />} />
+                <Route path="/reclamation" element={<ShowReclamation />} />
+              </>
+            ) : user.role === 'chef_service' ? (
+              <>
+                <Route path="/" element={<Chef_service />} />
+                <Route path="/services" element={<LocalServices />} />
+                <Route path="/users" element={<LocalUsers />} />
+              </>
+            ) : (
+              <>
+                <Route path="/" element={<Guichier />} />
+                <Route path="/add_actualite" element={<Guichier />} />
+              </>
+            )}
           </>
         )}
         <Route path="/about" element={<About />} />
