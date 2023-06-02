@@ -34,13 +34,22 @@ const Navbar = () => {
       />
       <Stack direction={'row'} spacing={1}>
         {user !== null && (
-          <NeoButton
-            onClick={() => {
-              navigate('/')
-            }}
-            text={'Acceuil'}
-            type={location.pathname === '/' ? 'info' : 'none'}
-          />
+          <>
+            <NeoButton
+              onClick={() => {
+                navigate('/')
+              }}
+              text={'Acceuil'}
+              type={location.pathname === '/' ? 'info' : 'none'}
+            />
+            <NeoButton
+              onClick={() => {
+                navigate('/message')
+              }}
+              text={'Messages'}
+              type={location.pathname === '/message' ? 'info' : 'none'}
+            />
+          </>
         )}
         {user === null && (
           <>
