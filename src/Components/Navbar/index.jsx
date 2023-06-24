@@ -19,7 +19,7 @@ const Navbar = () => {
       width={'calc(100%-180px)'}
       bgcolor={'#CFCFCF'}
       borderRadius={'0 0 91px 91px'}
-      zIndex={10000}
+      zIndex={100}
       position={'sticky'}
     >
       <img

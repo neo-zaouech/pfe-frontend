@@ -155,7 +155,7 @@ const FormBureau = ({ type }) => {
                   fullWidth
                   value={value}
                   onChange={onChange}
-                  label="City"
+                  label="Cité"
                 />
               )}
             />
@@ -238,7 +238,7 @@ const FormBureau = ({ type }) => {
                 ])
               }}
             >
-              Add Horaire
+              Ajouter Horaire
             </Typography>
             {horaire.map((h, index) => {
               return (
@@ -250,7 +250,7 @@ const FormBureau = ({ type }) => {
                 >
                   <Label />
                   <Box>
-                    <InputLabel>Start Date</InputLabel>
+                    <InputLabel>Date début</InputLabel>
                     <Select
                       value={h.dateDeb}
                       label="Start Date"
@@ -261,20 +261,20 @@ const FormBureau = ({ type }) => {
                         setHoraire(x)
                       }}
                     >
-                      <MenuItem value={'LU'}>Monday</MenuItem>
-                      <MenuItem value={'MA'}>Tuesday</MenuItem>
-                      <MenuItem value={'ME'}>Wednesday</MenuItem>
-                      <MenuItem value={'JE'}>Thursday</MenuItem>
-                      <MenuItem value={'VE'}>Friday</MenuItem>
-                      <MenuItem value={'SA'}>Saturday</MenuItem>
-                      <MenuItem value={'DI'}>Sunday</MenuItem>
+                      <MenuItem value={'LU'}>Lundi</MenuItem>
+                      <MenuItem value={'MA'}>Mardi</MenuItem>
+                      <MenuItem value={'ME'}>Mercredi</MenuItem>
+                      <MenuItem value={'JE'}>Jeudi</MenuItem>
+                      <MenuItem value={'VE'}>Vendredi</MenuItem>
+                      <MenuItem value={'SA'}>Samedi</MenuItem>
+                      <MenuItem value={'DI'}>Dimanche</MenuItem>
                     </Select>
                   </Box>
                   <Box>
-                    <InputLabel>Start Date</InputLabel>
+                    <InputLabel>Date Fin</InputLabel>
                     <Select
                       value={h.dateFin}
-                      label="End Date"
+                      label="Date Fin"
                       onChange={(event) => {
                         const value = event.target.value
                         const x = [...horaire]
@@ -282,13 +282,13 @@ const FormBureau = ({ type }) => {
                         setHoraire(x)
                       }}
                     >
-                      <MenuItem value={'LU'}>Monday</MenuItem>
-                      <MenuItem value={'MA'}>Tuesday</MenuItem>
-                      <MenuItem value={'ME'}>Wednesday</MenuItem>
-                      <MenuItem value={'JE'}>Thursday</MenuItem>
-                      <MenuItem value={'VE'}>Friday</MenuItem>
-                      <MenuItem value={'SA'}>Saturday</MenuItem>
-                      <MenuItem value={'DI'}>Sunday</MenuItem>
+                      <MenuItem value={'LU'}>Lundi</MenuItem>
+                      <MenuItem value={'MA'}>Mardi</MenuItem>
+                      <MenuItem value={'ME'}>Mercredi</MenuItem>
+                      <MenuItem value={'JE'}>Jeudi</MenuItem>
+                      <MenuItem value={'VE'}>Vendredi</MenuItem>
+                      <MenuItem value={'SA'}>Samedi</MenuItem>
+                      <MenuItem value={'DI'}>Dimanche</MenuItem>
                     </Select>
                   </Box>
                   <Box>
@@ -308,7 +308,7 @@ const FormBureau = ({ type }) => {
                     />
                   </Box>
                   <Box>
-                    <InputLabel>End Time</InputLabel>
+                    <InputLabel>Heure Fin</InputLabel>
                     <TimePicker
                       label=""
                       value={
@@ -340,7 +340,7 @@ const FormBureau = ({ type }) => {
             })}
             <NeoButton
               type={'success'}
-              text={type === 'add' ? 'Add new' : 'Edit'}
+              text={type === 'add' ? 'Ajouter nouveau' : 'Modifier'}
             />
           </Stack>
         </form>

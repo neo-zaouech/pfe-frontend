@@ -19,6 +19,7 @@ import NeoButton from '../../Components/NeoButton'
 import { useDispatch, useSelector } from 'react-redux'
 import listeActions from '../../redux/actions'
 import FormUser from './FormUser'
+import Swal from 'sweetalert2'
 const LocalUsers = () => {
   const [type, setType] = useState('add')
   const [open, setOpen] = useState(false)
@@ -59,25 +60,65 @@ const LocalUsers = () => {
   }, [user])
 
   const actionUser = (data) => {
-    axios
-      .post('http://127.0.0.1:5000/chef_service/user', {
-        idGuichier: data.bureau._id,
-        idBureau: user.bureau._id,
-        action: data.action ? '' : 'affecter',
+    if (data.action === 'delete') {
+      Swal.fire({
+        title: 'Etes vous sur de supprimer ce guichier de votre bureau',
+        text: '',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Oui',
+        cancelButtonText: 'Non',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          axios
+            .post('http://127.0.0.1:5000/chef_service/user', {
+              idGuichier: data.bureau._id,
+              idBureau: user.bureau._id,
+              action: data.action ? '' : 'affecter',
+            })
+            .then((response) => {
+              setOpen(false)
+              localStorage.setItem(
+                'user',
+                JSON.stringify({ ...user, bureau: response.data })
+              )
+              dispatch({
+                type: listeActions.statusUser,
+                statusService: data.action,
+              })
+              dispatch({
+                type: listeActions.login,
+                user: { ...user, bureau: response.data },
+              })
+              Swal.fire('Supprimé!', `Guichier supprimé avec succé`, 'success')
+            })
+        }
       })
-      .then((response) => {
-        setOpen(false)
-        localStorage.setItem(
-          'user',
-          JSON.stringify({ ...user, bureau: response.data })
-        )
-        dispatch({ type: listeActions.statusUser, statusService: data.action })
-        dispatch({
-          type: listeActions.login,
-          user: { ...user, bureau: response.data },
+    } else
+      axios
+        .post('http://127.0.0.1:5000/chef_service/user', {
+          idGuichier: data.bureau._id,
+          idBureau: user.bureau._id,
+          action: data.action ? '' : 'affecter',
         })
-      })
-    console.log('sfbqsdjfqds', data)
+        .then((response) => {
+          setOpen(false)
+          localStorage.setItem(
+            'user',
+            JSON.stringify({ ...user, bureau: response.data })
+          )
+          dispatch({
+            type: listeActions.statusUser,
+            statusService: data.action,
+          })
+          dispatch({
+            type: listeActions.login,
+            user: { ...user, bureau: response.data },
+          })
+          Swal.fire('Ajouté!', `Guichier ajouté avec succé`, 'success')
+        })
   }
 
   return (
@@ -101,7 +142,7 @@ const LocalUsers = () => {
         />
       )}
       <NeoButton
-        text={'add User'}
+        text={'Ajouter Utilisateur'}
         type={'success'}
         onClick={() => {
           setType('add')
@@ -114,10 +155,10 @@ const LocalUsers = () => {
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
-              <TableCell>Name</TableCell>
+              <TableCell>Nom</TableCell>
               <TableCell align="center">Email</TableCell>
               <TableCell align="center">CIN</TableCell>
-              <TableCell align="center">Role</TableCell>
+              <TableCell align="center">Rôle</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -175,17 +216,13 @@ const LocalUsers = () => {
                   >
                     <Button
                       onClick={() => {
-                        if (
-                          window.confirm('Are you sure to delete this office ?')
-                        ) {
-                          actionUser({ bureau: u, action: 'delete' })
-                        }
+                        actionUser({ bureau: u, action: 'delete' })
                       }}
                       color="error"
                       variant="contained"
                       startIcon={<DeleteForeverIcon />}
                     >
-                      Delete
+                      Supprimer
                     </Button>
                   </TableCell>
                 </TableRow>

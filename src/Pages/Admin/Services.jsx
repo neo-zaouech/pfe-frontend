@@ -23,6 +23,7 @@ import FormService from './FormService'
 import { useDispatch, useSelector } from 'react-redux'
 import listeActions from '../../redux/actions'
 import ScreenSearchDesktopIcon from '@mui/icons-material/ScreenSearchDesktop'
+import Swal from 'sweetalert2'
 
 const Services = () => {
   const [type, setType] = useState('add')
@@ -49,13 +50,39 @@ const Services = () => {
     }
   }, [statusService])
 
-  const deleteService = (idService) => {
-    axios
-      .delete('http://127.0.0.1:5000/admin/service', { data: { idService } })
-      .then((response) => {
-        console.log(response.data)
-        setServices(response.data)
-      })
+  const deleteService = (idService, deleted = true) => {
+    deleted
+      ? Swal.fire({
+          title: 'Etes vous sur de supprimer ce service',
+          text: '',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Oui',
+          cancelButtonText: 'Non',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            axios
+              .delete('http://127.0.0.1:5000/admin/service', {
+                data: { idService },
+              })
+              .then((response) => {
+                console.log(response.data)
+                setServices(response.data)
+                Swal.fire('Supprimé!', `Service supprimé avec succé`, 'success')
+              })
+          }
+        })
+      : axios
+          .delete('http://127.0.0.1:5000/admin/service', {
+            data: { idService },
+          })
+          .then((response) => {
+            console.log(response.data)
+            setServices(response.data)
+            Swal.fire('Restoré!', `Service restoré avec succé`, 'success')
+          })
   }
   return (
     <Stack
@@ -75,7 +102,7 @@ const Services = () => {
       />
       <Stack direction={'row'} spacing={5}>
         <NeoButton
-          text={'add Service'}
+          text={'ajouter Service'}
           type={'success'}
           onClick={() => {
             setType('add')
@@ -103,84 +130,84 @@ const Services = () => {
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
-              <TableCell>Name of Service</TableCell>
+              <TableCell>Nom du Service</TableCell>
               <TableCell align="center">crée le</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {services.map((service) => (
-              <TableRow
-                key={service._id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {service.deletedAt === null ? (
-                    <CheckCircleOutlineIcon
-                      htmlColor="green"
-                      sx={{ fontSize: '30px' }}
-                    />
-                  ) : (
-                    <HighlightOffIcon
-                      htmlColor="red"
-                      sx={{ fontSize: '30px' }}
-                    />
-                  )}
-                </TableCell>
-                <TableCell component="th" scope="row">
-                  {service.name}
-                </TableCell>
-                <TableCell component="th" scope="row" align="center">
-                  {dayjs(service.createdAt).format('YYYY-MM-DD HH:mm')}
-                </TableCell>
-
-                <TableCell
-                  align="center"
-                  sx={{ display: 'flex', justifyContent: 'space-around' }}
+            {services
+              .filter((s) => {
+                return s.name.toUpperCase().includes(search.toUpperCase())
+              })
+              .map((service) => (
+                <TableRow
+                  key={service._id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
-                  {service.deletedAt === null && (
-                    <Button
-                      color="warning"
-                      variant="contained"
-                      startIcon={<SettingsIcon />}
-                      onClick={() => {
-                        setType('edit')
-                        setOpen(true)
-                        setServiceProps(service)
-                      }}
-                    >
-                      Edit
-                    </Button>
-                  )}
+                  <TableCell component="th" scope="row">
+                    {service.deletedAt === null ? (
+                      <CheckCircleOutlineIcon
+                        htmlColor="green"
+                        sx={{ fontSize: '30px' }}
+                      />
+                    ) : (
+                      <HighlightOffIcon
+                        htmlColor="red"
+                        sx={{ fontSize: '30px' }}
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell component="th" scope="row">
+                    {service.name}
+                  </TableCell>
+                  <TableCell component="th" scope="row" align="center">
+                    {dayjs(service.createdAt).format('YYYY-MM-DD HH:mm')}
+                  </TableCell>
 
-                  {service.deletedAt !== null ? (
-                    <Button
-                      onClick={() => deleteService(service._id)}
-                      color="success"
-                      variant="contained"
-                      startIcon={<DeleteForeverIcon />}
-                    >
-                      Restore
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => {
-                        if (
-                          window.confirm('Are you sure to delete this office ?')
-                        ) {
+                  <TableCell
+                    align="center"
+                    sx={{ display: 'flex', justifyContent: 'space-around' }}
+                  >
+                    {service.deletedAt === null && (
+                      <Button
+                        color="warning"
+                        variant="contained"
+                        startIcon={<SettingsIcon />}
+                        onClick={() => {
+                          setType('edit')
+                          setOpen(true)
+                          setServiceProps(service)
+                        }}
+                      >
+                        Modifier
+                      </Button>
+                    )}
+
+                    {service.deletedAt !== null ? (
+                      <Button
+                        onClick={() => deleteService(service._id, false)}
+                        color="success"
+                        variant="contained"
+                        startIcon={<DeleteForeverIcon />}
+                      >
+                        Restorer
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => {
                           deleteService(service._id)
-                        }
-                      }}
-                      color="error"
-                      variant="contained"
-                      startIcon={<DeleteForeverIcon />}
-                    >
-                      Delete
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+                        }}
+                        color="error"
+                        variant="contained"
+                        startIcon={<DeleteForeverIcon />}
+                      >
+                        Supprimer
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
