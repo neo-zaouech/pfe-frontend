@@ -25,7 +25,6 @@ const FormActualite = ({ type, open, handleClose }) => {
   const { handleSubmit, control } = useForm({ defaultValues: { text: '' } })
   const dispatch = useDispatch()
   const actionActualite = (data) => {
-    console.log(selectedFile)
     const formData = new FormData()
     formData.append('image', selectedFile)
     formData.append('text', data.text)
@@ -80,7 +79,12 @@ const FormActualite = ({ type, open, handleClose }) => {
                   />
                 )}
               />
-              <input type="file" name="image" onChange={handleFileSelect} />
+              <input
+                required
+                type="file"
+                name="image"
+                onChange={handleFileSelect}
+              />
               <NeoButton
                 text={type === 'add' ? 'Add new' : 'Edit'}
                 type={type === 'add' ? 'success' : 'edit'}

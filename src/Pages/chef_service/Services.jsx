@@ -104,7 +104,6 @@ const LocalServices = () => {
       )}
       {user.bureau ? (
         <>
-          {' '}
           <NeoButton
             text={'Affecter Service'}
             type={'success'}
@@ -119,7 +118,7 @@ const LocalServices = () => {
               <TableHead>
                 <TableRow>
                   <TableCell></TableCell>
-                  <TableCell>Name of Service</TableCell>
+                  <TableCell>Nom du Service</TableCell>
                   <TableCell align="center">crée le</TableCell>
                   <TableCell align="center">Actions</TableCell>
                 </TableRow>

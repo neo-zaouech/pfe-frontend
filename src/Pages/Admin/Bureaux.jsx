@@ -24,6 +24,7 @@ import NeoButton from '../../Components/NeoButton'
 import governments from '../../goverments'
 import InputAdornment from '@mui/material/InputAdornment'
 import ScreenSearchDesktopIcon from '@mui/icons-material/ScreenSearchDesktop'
+import Swal from 'sweetalert2'
 const Bureaux = () => {
   const navigate = useNavigate()
   const [bureaux, setBureaux] = useState([])
@@ -39,13 +40,37 @@ const Bureaux = () => {
       })
   }, [])
 
-  const deleteOffice = (idBureau) => {
-    axios
-      .delete('http://127.0.0.1:5000/admin/bureau', { data: { idBureau } })
-      .then((response) => {
-        console.log(response.data)
-        setBureaux(response.data)
-      })
+  const deleteOffice = (idBureau, deleted = true) => {
+    deleted
+      ? Swal.fire({
+          title: 'Etes vous sur de supprimer ce bureau',
+          text: '',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Oui',
+          cancelButtonText: 'Non',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            axios
+              .delete('http://127.0.0.1:5000/admin/bureau', {
+                data: { idBureau },
+              })
+              .then((response) => {
+                console.log(response.data)
+                setBureaux(response.data)
+                Swal.fire('Supprimé!', `Bureau supprimé avec succé`, 'success')
+              })
+          }
+        })
+      : axios
+          .delete('http://127.0.0.1:5000/admin/bureau', { data: { idBureau } })
+          .then((response) => {
+            console.log(response.data)
+            setBureaux(response.data)
+            Swal.fire('Restoré!', `Bureau restoré avec succé`, 'success')
+          })
   }
 
   return (
@@ -60,7 +85,7 @@ const Bureaux = () => {
     >
       <Stack direction={'row'} spacing={5}>
         <NeoButton
-          text={'add Office'}
+          text={'Ajouter bureau'}
           type={'success'}
           onClick={() => {
             navigate('/add_bureau')
@@ -87,7 +112,7 @@ const Bureaux = () => {
             <TableRow>
               <TableCell></TableCell>
               <TableCell>localisation</TableCell>
-              <TableCell align="center">chefService</TableCell>
+              <TableCell align="center">chef Service</TableCell>
               <TableCell align="center">Horaires</TableCell>
               <TableCell align="center">Services</TableCell>
               <TableCell align="center">Actions</TableCell>
@@ -194,35 +219,29 @@ const Bureaux = () => {
                           navigate('/edit_bureau', { state: { bureau } })
                         }}
                       >
-                        Edit
+                        Modifier
                       </Button>
                     )}
 
                     {bureau.deletedAt !== null ? (
                       <Button
-                        onClick={() => deleteOffice(bureau._id)}
+                        onClick={() => deleteOffice(bureau._id, false)}
                         color="success"
                         variant="contained"
                         startIcon={<DeleteForeverIcon />}
                       >
-                        Restore
+                        Restorer
                       </Button>
                     ) : (
                       <Button
                         onClick={() => {
-                          if (
-                            window.confirm(
-                              'Are you sure to delete this office ?'
-                            )
-                          ) {
-                            deleteOffice(bureau._id)
-                          }
+                          deleteOffice(bureau._id)
                         }}
                         color="error"
                         variant="contained"
                         startIcon={<DeleteForeverIcon />}
                       >
-                        Delete
+                        Supprimer
                       </Button>
                     )}
                   </TableCell>

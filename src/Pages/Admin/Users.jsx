@@ -23,6 +23,7 @@ import listeActions from '../../redux/actions'
 import FormUser from './FormUser'
 import ScreenSearchDesktopIcon from '@mui/icons-material/ScreenSearchDesktop'
 import governments from '../../goverments'
+import Swal from 'sweetalert2'
 const Users = () => {
   const [type, setType] = useState('add')
   const [open, setOpen] = useState(false)
@@ -48,13 +49,39 @@ const Users = () => {
     }
   }, [statusUser])
 
-  const deleteUser = (idUser) => {
-    axios
-      .delete('http://127.0.0.1:5000/admin/user', { data: { idUser } })
-      .then((response) => {
-        console.log(response.data)
-        setServices(response.data)
-      })
+  const deleteUser = (idUser, deleted = true) => {
+    deleted
+      ? Swal.fire({
+          title: 'Etes vous sur de supprimer cet utilisateur',
+          text: '',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Oui',
+          cancelButtonText: 'Non',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            axios
+              .delete('http://127.0.0.1:5000/admin/user', { data: { idUser } })
+              .then((response) => {
+                console.log(response.data)
+                setServices(response.data)
+                Swal.fire(
+                  'Restoré!',
+                  `Utilisateur supprimé avec succé`,
+                  'success'
+                )
+              })
+          }
+        })
+      : axios
+          .delete('http://127.0.0.1:5000/admin/user', { data: { idUser } })
+          .then((response) => {
+            console.log(response.data)
+            setServices(response.data)
+            Swal.fire('Restoré!', `Utilisateur restoré avec succé`, 'success')
+          })
   }
   return (
     <Stack
@@ -74,7 +101,7 @@ const Users = () => {
       />
       <Stack direction={'row'} spacing={5}>
         <NeoButton
-          text={'add User'}
+          text={'Ajouter utilisateur'}
           type={'success'}
           onClick={() => {
             setType('add')
@@ -102,10 +129,10 @@ const Users = () => {
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
-              <TableCell>Name</TableCell>
+              <TableCell>Nom</TableCell>
               <TableCell align="center">Email</TableCell>
               <TableCell align="center">CIN</TableCell>
-              <TableCell align="center">Role</TableCell>
+              <TableCell align="center">Rôle</TableCell>
               <TableCell align="center">Bureau</TableCell>
             </TableRow>
           </TableHead>
@@ -179,35 +206,29 @@ const Users = () => {
                           setServiceProps(user)
                         }}
                       >
-                        Edit
+                        Modifier
                       </Button>
                     )}
 
                     {user.deletedAt !== null ? (
                       <Button
-                        onClick={() => deleteUser(user._id)}
+                        onClick={() => deleteUser(user._id, false)}
                         color="success"
                         variant="contained"
                         startIcon={<DeleteForeverIcon />}
                       >
-                        Restore
+                        Restorer
                       </Button>
                     ) : (
                       <Button
                         onClick={() => {
-                          if (
-                            window.confirm(
-                              'Are you sure to delete this office ?'
-                            )
-                          ) {
-                            deleteUser(user._id)
-                          }
+                          deleteUser(user._id)
                         }}
                         color="error"
                         variant="contained"
                         startIcon={<DeleteForeverIcon />}
                       >
-                        Delete
+                        Supprimer
                       </Button>
                     )}
                   </TableCell>

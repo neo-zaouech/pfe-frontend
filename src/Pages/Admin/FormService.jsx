@@ -77,12 +77,12 @@ export default function FormService({ type, service, open, handleClose }) {
             <TextField
               sx={{ mb: '30px' }}
               fullWidth
-              label={'Name of service'}
+              label={'Nom du service'}
               value={name}
               onChange={(event) => setName(event.target.value)}
             />
             <NeoButton
-              text={type === 'add' ? 'Add new' : 'Edit'}
+              text={type === 'add' ? 'Ajouter nouveau' : 'Modifier'}
               type={type === 'add' ? 'success' : 'edit'}
               onClick={() => {
                 actionService()

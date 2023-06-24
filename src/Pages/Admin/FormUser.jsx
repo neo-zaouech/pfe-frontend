@@ -31,6 +31,7 @@ const style = {
   boxShadow: 24,
   p: 4,
   textAlign: 'center',
+  zIndex: 1302323,
 }
 
 export default function FormUser({ type, user, open, handleClose }) {
@@ -123,7 +124,7 @@ export default function FormUser({ type, user, open, handleClose }) {
                     fullWidth
                     value={value}
                     onChange={onChange}
-                    label={'First Name'}
+                    label={'Nom'}
                   />
                 )}
               />
@@ -135,7 +136,7 @@ export default function FormUser({ type, user, open, handleClose }) {
                     fullWidth
                     value={value}
                     onChange={onChange}
-                    label={'Last Name'}
+                    label={'Prénom'}
                   />
                 )}
               />
@@ -172,7 +173,7 @@ export default function FormUser({ type, user, open, handleClose }) {
                       fullWidth
                       value={value}
                       onChange={onChange}
-                      label={'Password'}
+                      label={'Mot de passe'}
                     />
                   )}
                 />
@@ -200,7 +201,7 @@ export default function FormUser({ type, user, open, handleClose }) {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       value={value}
-                      label="Role"
+                      label="Rôle"
                       onChange={onChange}
                     >
                       <MenuItem value={'admin'}>Admin</MenuItem>
@@ -246,7 +247,7 @@ export default function FormUser({ type, user, open, handleClose }) {
                 />
               )}
               <NeoButton
-                text={type === 'add' ? 'Add new' : 'Edit'}
+                text={type === 'add' ? 'Ajouter nouveau' : 'Modifier'}
                 type={type === 'add' ? 'success' : 'edit'}
               />
             </Stack>
